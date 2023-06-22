@@ -9,7 +9,7 @@ export default function Header() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="relative flex items-center justify-between">
             <div className="flex-shrink-0">
-              <Logo small inline={false} className="mx-auto mb-auto" />
+              <Logo inline={false} className="mx-auto mb-auto" />
             </div>
 
             <div className="flex items-center justify-center space-x-10">

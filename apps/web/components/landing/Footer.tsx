@@ -9,7 +9,7 @@ export default function Footer() {
       <div className="mx-auto max-w-7xl px-6">
         <div className="text-center xl:flex xl:items-center xl:justify-between xl:text-left">
           <div className="xl:flex xl:items-center xl:justify-start">
-            <Logo small inline={false} className="mx-auto mb-auto" />
+            <Logo inline={false} className="mx-auto mb-auto" />
           </div>
 
           <div className="mt-8 items-center xl:mt-0 xl:flex xl:justify-end xl:space-x-8">

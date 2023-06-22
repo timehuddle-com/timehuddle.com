@@ -10,7 +10,7 @@ export default function Hero() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="relative flex items-center justify-between">
             <div className="flex-shrink-0">
-              <Logo small inline={false} className="mx-auto mb-auto" />
+              <Logo inline={false} className="mx-auto mb-auto" />
             </div>
 
             <div className="flex items-center justify-center space-x-10">
@@ -86,8 +86,32 @@ export default function Hero() {
           </div>
         </div>
 
-        <div className="mt-8 mb-8 lg:mt-16 lg:mb-16">
-          <img className="relative mx-auto w-full max-w-5xl" src="/emails/calendar-email-hero.png" alt="" />
+        <div className="mx-auto max-w-7xl px-4 mt-8 mb-8 lg:mt-16 lg:mb-16">
+          <div className="mx-auto mt-8 grid max-w-md grid-cols-1 lg:mt-16 lg:max-w-full lg:grid-cols-3">
+            <div className="p-4">
+              <img
+                className="relative mx-auto w-full"
+                src="/bookerlayout_column_view.svg"
+                alt=""
+              />
+            </div>
+
+            <div className="p-4">
+              <img
+                className="relative mx-auto w-full"
+                src="/bookerlayout_month_view.svg"
+                alt=""
+              />
+            </div>
+
+            <div className="p-4">
+              <img
+                className="relative mx-auto w-full"
+                src="/bookerlayout_week_view.svg"
+                alt=""
+              />
+            </div>
+          </div>
         </div>
       </section>
     </div>

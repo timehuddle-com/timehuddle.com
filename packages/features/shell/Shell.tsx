@@ -421,6 +421,7 @@ function UserDropdown({ small }: UserDropdownProps) {
                     {user.away ? t("set_as_free") : t("set_as_away")}
                   </DropdownItem>
                 </DropdownMenuItem>
+                {/*
                 <DropdownMenuSeparator />
                 <DropdownMenuItem>
                   <DropdownItem
@@ -449,9 +450,9 @@ function UserDropdown({ small }: UserDropdownProps) {
                     {t("download_desktop_app")}
                   </DropdownItem>
                 </DropdownMenuItem>
-
+                
                 <DropdownMenuSeparator />
-
+                */}
                 <DropdownMenuItem>
                   <DropdownItem
                     type="button"
@@ -1054,7 +1055,7 @@ function TopNav() {
         style={isEmbed ? { display: "none" } : {}}
         className="bg-muted border-subtle sticky top-0 z-40 flex w-full items-center justify-between border-b bg-opacity-50 py-1.5 px-4 backdrop-blur-lg sm:p-4 md:hidden">
         <Link href="/event-types">
-          <Logo />
+          <Logo small />
         </Link>
         <div className="flex items-center gap-2 self-center">
           <span className="hover:bg-muted hover:text-emphasis text-default group flex items-center rounded-full text-sm font-medium lg:hidden">
