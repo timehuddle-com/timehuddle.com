@@ -11,11 +11,11 @@ export const metadata = {
   category: "calendar",
   categories: ["calendar"],
   logo: "icon.svg",
-  publisher: "Cal.com",
+  publisher: "Timehuddle",
   slug: "office365-calendar",
   dirName: "office365calendar",
-  url: "https://cal.com/",
-  email: "help@cal.com",
+  url: "https://timehuddle.com/",
+  email: "support@timehuddle.com",
 } as AppMeta;
 
 export default metadata;

@@ -105,7 +105,7 @@ export default function Custom404() {
                 <h1 className="font-cal text-emphasis mt-2 text-3xl font-extrabold">
                   {t("signup_requires")}
                 </h1>
-                <p className="mt-4">{t("signup_requires_description", { companyName: "Cal.com" })}</p>
+                <p className="mt-4">{t("signup_requires_description", { companyName: "Timehuddle" })}</p>
               </div>
               <div className="mt-12">
                 <h2 className="text-subtle text-sm font-semibold uppercase tracking-wide">
@@ -113,8 +113,9 @@ export default function Custom404() {
                 </h2>
                 <ul role="list" className="mt-4">
                   <li className="border-2 border-green-500 px-4 py-2">
+                    {/* TODO LINK */}
                     <a
-                      href="https://console.cal.com"
+                      href="https://console.timehuddle.com"
                       className="relative flex items-start space-x-4 py-6 rtl:space-x-reverse">
                       <div className="flex-shrink-0">
                         <span className="flex h-12 w-12 items-center justify-center rounded-lg bg-green-50">
@@ -141,8 +142,9 @@ export default function Custom404() {
 
                 <ul role="list" className="border-subtle divide-subtle divide-y">
                   <li className="px-4 py-2">
+                    {/* TODO LINK */}
                     <Link
-                      href="https://cal.com/self-hosting/installation"
+                      href="https://timehuddle.com"
                       className="relative flex items-start space-x-4 py-6 rtl:space-x-reverse">
                       <div className="flex-shrink-0">
                         <span className="bg-muted flex h-12 w-12 items-center justify-center rounded-lg">

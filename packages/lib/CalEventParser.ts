@@ -134,7 +134,7 @@ export const getProviderName = (calEvent: CalendarEvent): string => {
   if (calEvent.location && calEvent.location.includes("integrations:")) {
     let location = calEvent.location.split(":")[1];
     if (location === "daily") {
-      location = "Cal Video";
+      location = "Timehuddle Video";
     }
     return location[0].toUpperCase() + location.slice(1);
   }

@@ -93,10 +93,10 @@ export default class EventManager {
    */
   public async create(event: CalendarEvent): Promise<CreateUpdateResult> {
     const evt = processLocation(event);
-    // Fallback to cal video if no location is set
+    // Fallback to Timehuddle Video if no location is set
     if (!evt.location) evt["location"] = "integrations:daily";
 
-    // Fallback to Cal Video if Google Meet is selected w/o a Google Cal
+    // Fallback to Timehuddle Video if Google Meet is selected w/o a Google Cal
     if (evt.location === MeetLocationType && evt.destinationCalendar?.integration !== "google_calendar") {
       evt["location"] = "integrations:daily";
     }
@@ -388,7 +388,7 @@ export default class EventManager {
       .find((credential: CredentialPayload) => credential.type.includes(integrationName));
 
     /**
-     * This might happen if someone tries to use a location with a missing credential, so we fallback to Cal Video.
+     * This might happen if someone tries to use a location with a missing credential, so we fallback to Timehuddle Video.
      * @todo remove location from event types that has missing credentials
      * */
     if (!videoCredential) videoCredential = { ...FAKE_DAILY_CREDENTIAL, appName: "FAKE" };

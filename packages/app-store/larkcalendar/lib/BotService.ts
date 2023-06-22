@@ -36,13 +36,13 @@ const msg = {
       [
         {
           tag: "text",
-          text: "1. Visit https://cal.com and sign up for an account.",
+          text: "1. Visit https://timehuddle.com and sign up for an account.",
         },
       ],
       [
         {
           tag: "text",
-          text: '2. Then go to "Apps" in Cal -> install ',
+          text: '2. Then go to "Apps" in Timehuddle -> install ',
         },
         {
           tag: "a",

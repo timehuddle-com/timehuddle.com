@@ -10,12 +10,12 @@ export const metadata = {
   categories: ["video"],
   variant: "conferencing",
   logo: "icon.svg",
-  publisher: "Cal.com",
+  publisher: "Timehuddle",
   url: "https://zoom.us/",
   category: "video",
   slug: "zoom",
   title: "Zoom Video",
-  email: "help@cal.com",
+  email: "support@timehuddle.com",
   appData: {
     location: {
       default: false,

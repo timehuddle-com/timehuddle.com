@@ -8,9 +8,9 @@ import { TRPCError } from "@calcom/trpc/server";
 export const samlDatabaseUrl = process.env.SAML_DATABASE_URL || "";
 export const isSAMLLoginEnabled = samlDatabaseUrl.length > 0;
 
-export const samlTenantID = "Cal.com";
-export const samlProductID = "Cal.com";
-export const samlAudience = "https://saml.cal.com";
+export const samlTenantID = "timehuddle.com";
+export const samlProductID = "timehuddle.com";
+export const samlAudience = "https://timehuddle.com";
 export const samlPath = "/api/auth/saml/callback";
 export const oidcPath = "/api/auth/oidc";
 export const clientSecretVerifier = process.env.SAML_CLIENT_SECRET_VERIFIER || "dummy";

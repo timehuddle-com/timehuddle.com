@@ -7,8 +7,8 @@
   "url": "https://example.com/link",
   "variant": "conferencing",
   "categories": ["video"],
-  "publisher": "Cal.com Inc",
-  "email": "support@cal.com",
+  "publisher": "Timehuddle",
+  "email": "support@timehuddle.com",
   "appData": {
     "location": {
       "type": "integrations:{SLUG}_video",

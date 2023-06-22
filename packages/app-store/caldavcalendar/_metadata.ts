@@ -12,10 +12,10 @@ export const metadata = {
   category: "calendar",
   categories: ["calendar"],
   logo: "icon.svg",
-  publisher: "Cal.com",
+  publisher: "Timehuddle",
   slug: "caldav-calendar",
-  url: "https://cal.com/",
-  email: "ali@cal.com",
+  url: "https://timehuddle.com/",
+  email: "support@timehuddle.com",
   dirName: "caldavcalendar",
 } as AppMeta;
 

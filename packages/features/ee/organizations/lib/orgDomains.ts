@@ -2,11 +2,11 @@ import { WEBAPP_URL } from "@calcom/lib/constants";
 
 // Define which hostnames are expected for the app
 export const appHostnames = [
-  "cal.com",
-  "cal.dev",
-  "cal-staging.com",
-  "cal.community",
-  "cal.local:3000",
+  "timehuddle.com",
+  "timehuddle.dev",
+  "timehuddle-staging.com",
+  "timehuddle.community",
+  "timehuddle.local:3000",
   // ⬇️ Prevents 404 error for normal localhost development, makes it backwards compatible
   "localhost:3000",
 ];

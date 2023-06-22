@@ -15,7 +15,7 @@ export const metadata = {
   publisher: "",
   url: "",
   isGlobal: false,
-  email: "help@cal.com",
+  email: "support@timehuddle.com",
   appData: {
     location: {
       linkType: "dynamic",

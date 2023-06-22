@@ -8,14 +8,14 @@ export const metadata = {
   installed: true,
   categories: ["other"],
   logo: "icon.svg",
-  publisher: "Cal.com",
+  publisher: "Timehuddle",
   slug: "giphy",
   title: "Giphy",
   type: "giphy_other",
-  url: "https://cal.com/apps/giphy",
+  url: "https://timehuddle.com/apps/giphy",
   variant: "other",
   extendsFeature: "EventType",
-  email: "help@cal.com",
+  email: "support@timehuddle.com",
   dirName: "giphy",
 } as AppMeta;
 

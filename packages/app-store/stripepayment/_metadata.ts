@@ -14,14 +14,14 @@ export const metadata = {
   category: "payment",
   categories: ["payment"],
   logo: "icon.svg",
-  publisher: "Cal.com",
+  publisher: "Timehuddle",
   title: "Stripe",
   type: "stripe_payment",
-  url: "https://cal.com/",
+  url: "https://timehuddle.com/",
   docsUrl: "https://stripe.com/docs",
   variant: "payment",
   extendsFeature: "EventType",
-  email: "help@cal.com",
+  email: "support@timehuddle.com",
   dirName: "stripepayment",
 } as AppMeta;
 

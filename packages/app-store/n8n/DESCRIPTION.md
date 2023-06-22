@@ -16,8 +16,8 @@ items:
 <h2>Using API keys</h2>
 <p>Your API requests are authenticated using API keys. Any request that doesn't include an API key will return an error.</p>
 <ol>
-  <li>Log into your Cal account.</li>
+  <li>Log into your Timehuddle account.</li>
   <li>Click on <a target="_blank" href="/settings"><strong>Settings</strong></a>.</li>
-  <li>There you will find the API keys section which allows you to generate a key for use. More information on this can be found on the <a href="https://developer.cal.com/api/authentication">Cal Authentication</a> page.</li>
-  <li>Use API key in your Cal trigger node credentials in n8n.</li>
+  <li>There you will find the API keys section which allows you to generate a key for use.</li>
+  <li>Use API key in your Timehuddle trigger node credentials in n8n.</li>
 </ol>

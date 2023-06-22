@@ -3,7 +3,7 @@ import type { AppMeta } from "@calcom/types/App";
 import _package from "./package.json";
 
 export const metadata = {
-  name: "Cal Video",
+  name: "Timehuddle Video",
   description: _package.description,
   installed: !!process.env.DAILY_API_KEY,
   type: "daily_video",
@@ -11,17 +11,17 @@ export const metadata = {
   url: "https://daily.co",
   categories: ["video"],
   logo: "icon.svg",
-  publisher: "Cal.com",
+  publisher: "Timehuddle",
   category: "video",
   slug: "daily-video",
-  title: "Cal Video",
+  title: "Timehuddle Video",
   isGlobal: true,
-  email: "help@cal.com",
+  email: "support@timehuddle.com",
   appData: {
     location: {
       linkType: "dynamic",
       type: "integrations:daily",
-      label: "Cal Video",
+      label: "Timehuddle Video",
     },
   },
   key: { apikey: process.env.DAILY_API_KEY },

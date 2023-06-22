@@ -65,7 +65,7 @@ export function TeamsListing() {
     },
     {
       icon: <Video className="h-5 w-5 text-purple-500" />,
-      title: "Cal Video" + " " + t("recordings_title"),
+      title: "Timehuddle Video" + " " + t("recordings_title"),
       description: t("upgrade_to_access_recordings_description"),
     },
     {
@@ -107,7 +107,7 @@ export function TeamsListing() {
               <Button color="primary" href={`${WEBAPP_URL}/settings/teams/new`}>
                 {t("create_team")}
               </Button>
-              <Button color="minimal" href="https://go.cal.com/teams-video" target="_blank">
+              <Button color="minimal" href={`${WEBAPP_URL}/settings/teams/new`}>
                 {t("learn_more")}
               </Button>
             </ButtonGroup>

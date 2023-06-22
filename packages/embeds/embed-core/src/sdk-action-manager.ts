@@ -75,7 +75,7 @@ export class SdkActionManager {
   }
 
   getFullActionName(name: string) {
-    return this.namespace ? `CAL:${this.namespace}:${name}` : `CAL::${name}`;
+    return this.namespace ? `Timehuddle:${this.namespace}:${name}` : `Timehuddle::${name}`;
   }
 
   fire<T extends keyof EventDataMap>(name: T, data: EventDataMap[T]) {

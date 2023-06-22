@@ -141,7 +141,7 @@ export default function Signup({ prepopulateFormValues, token }: inferSSRProps<t
                       color="secondary"
                       className="w-full justify-center"
                       onClick={() =>
-                        signIn("Cal.com", {
+                        signIn("timehuddle.com", {
                           callbackUrl: router.query.callbackUrl
                             ? `${WEBAPP_URL}/${router.query.callbackUrl}`
                             : `${WEBAPP_URL}/getting-started`,

@@ -9,13 +9,13 @@ export const metadata = {
   category: "automation",
   categories: ["automation"],
   logo: "icon.svg",
-  publisher: "Cal.com",
+  publisher: "Timehuddle",
   slug: "zapier",
   title: "Zapier",
   type: "zapier_automation",
-  url: "https://cal.com/apps/zapier",
+  url: "https://timehuddle.com/apps/zapier",
   variant: "automation",
-  email: "help@cal.com",
+  email: "support@timehuddle.com",
   dirName: "zapier",
 } as AppMeta;
 

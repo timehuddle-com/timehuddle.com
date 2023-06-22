@@ -10,12 +10,12 @@ export const metadata = {
   variant: "conferencing",
   categories: ["video"],
   logo: "icon.svg",
-  publisher: "Cal.com",
+  publisher: "Timehuddle",
   url: "https://jitsi.org/",
   slug: "jitsi",
   title: "Jitsi Meet",
   isGlobal: false,
-  email: "help@cal.com",
+  email: "support@timehuddle.com",
   appData: {
     location: {
       linkType: "dynamic",

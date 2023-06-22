@@ -27,10 +27,10 @@ function getCspPolicy(nonce: string) {
     };
     object-src 'none';
     base-uri 'none';
-	  child-src app.cal.com;
+	  child-src timehuddle.com;
 	  style-src 'self' ${
       IS_PRODUCTION ? (useNonStrictPolicy ? "'unsafe-inline'" : "") : "'unsafe-inline'"
-    } app.cal.com;
+    } timehuddle.com;
 	  font-src 'self';
 	  img-src 'self' ${WEBAPP_URL} https://www.gravatar.com https://img.youtube.com https://eu.ui-avatars.com/api/ data:;
     connect-src 'self'

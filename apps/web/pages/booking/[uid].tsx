@@ -673,7 +673,7 @@ export default function Success(props: SuccessProps) {
                   <>
                     <hr className="border-subtle mt-8" />
                     <div className="text-default pt-8 text-center text-xs">
-                      <a href="https://cal.com/signup">
+                      <a href="https://timehuddle.com/signup">
                         {t("create_booking_link_with_calcom", { appName: APP_NAME })}
                       </a>
 
@@ -683,7 +683,7 @@ export default function Success(props: SuccessProps) {
                           const target = e.target as typeof e.target & {
                             email: { value: string };
                           };
-                          router.push(`https://cal.com/signup?email=${target.email.value}`);
+                          router.push(`https://timehuddle.com/signup?email=${target.email.value}`);
                         }}
                         className="mt-4 flex">
                         <EmailInput
@@ -691,7 +691,7 @@ export default function Success(props: SuccessProps) {
                           id="email"
                           defaultValue={email}
                           className="mr- focus:border-brand-default border-default text-default mt-0 block w-full rounded-none rounded-l-md shadow-sm focus:ring-black  sm:text-sm"
-                          placeholder="rick.astley@cal.com"
+                          placeholder="elon.musk@timehuddle.com"
                         />
                         <Button
                           size="lg"

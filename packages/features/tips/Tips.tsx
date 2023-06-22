@@ -82,7 +82,7 @@ export const tips = [
     id: 10,
     thumbnailUrl: "https://img.youtube.com/vi/jvaBafzVUQc/0.jpg",
     mediaLink: "https://go.cal.com/video",
-    title: "Cal Video",
+    title: "Timehuddle Video",
     description: "Free video conferencing with recording",
     href: "https://go.cal.com/video",
   },
