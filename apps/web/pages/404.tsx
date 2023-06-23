@@ -115,7 +115,7 @@ export default function Custom404() {
                   <li className="border-2 border-green-500 px-4 py-2">
                     {/* TODO LINK */}
                     <a
-                      href="https://console.timehuddle.com"
+                      href="https://timehuddle.com"
                       className="relative flex items-start space-x-4 py-6 rtl:space-x-reverse">
                       <div className="flex-shrink-0">
                         <span className="flex h-12 w-12 items-center justify-center rounded-lg bg-green-50">
