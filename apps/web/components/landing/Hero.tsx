@@ -53,15 +53,14 @@ export default function Hero() {
         <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-3xl text-center">
             <h1 className="mt-5 text-4xl font-bold leading-tight text-gray-900 sm:text-5xl sm:leading-tight lg:text-6xl lg:leading-tight">
-              Scheduling in advance made
+              Supercharge your personal and business 
               <span className="relative">
                 <span className="absolute inset-0 h-full w-full bg-gradient-to-r from-[#44BCFF] via-[#FF44EC] to-[#FF675E] opacity-30 blur-lg filter"></span>
-                <span className="relative"> simple </span>
+                <span className="relative"> booking! </span>
               </span>
             </h1>
             <p className="mx-auto mt-6 text-base leading-7 text-gray-600">
-              Timehuddle is a platform designed for scheduling automation that eliminates the need for
-              exchanging numerous emails to find the most suitable time.
+              Looking for a way to make booking a breeze? Look no further than Timehuddle! With just a few clicks, you'll be able to book appointments, manage your calendar, and keep track of all your important events.
             </p>
 
             <div className="mt-9 px-8 sm:flex sm:items-center sm:justify-center sm:space-x-5 sm:px-0">

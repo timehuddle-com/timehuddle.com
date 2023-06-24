@@ -15,6 +15,7 @@ import Brand from "@components/landing/Brand";
 import Features from "@components/landing/Features";
 import Footer from "@components/landing/Footer";
 import Hero from "@components/landing/Hero";
+import HowItWorks from "@components/landing/HowItWorks";
 import Pricing from "@components/landing/Pricing";
 import Testimonial from "@components/landing/Testimonial";
 
@@ -32,6 +33,7 @@ export default function Landing({}: inferSSRProps<typeof _getServerSideProps> & 
       <HeadSeo title="Home" description="Home" />
       <Hero />
       <Brand />
+      <HowItWorks />
       <Features />
       <Pricing />
       <Testimonial />
