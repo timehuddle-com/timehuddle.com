@@ -7,18 +7,18 @@ const log = logger.getChildLogger({ prefix: [`[[LarkTenantCredential]`] });
 
 const msg = {
   en_us: {
-    title: "Welcome to Cal.com!",
+    title: "Welcome to Timehuddle!",
     content: [
       [
         {
           tag: "text",
-          text: "Cal.com is an open source scheduling infrastructure.",
+          text: "Timehuddle is an open source scheduling infrastructure.",
         },
       ],
       [
         {
           tag: "text",
-          text: 'It allows users to send a unique "cal.com" URL that allows anyone to create bookings on their calendars',
+          text: 'It allows users to send a unique "Timehuddle" URL that allows anyone to create bookings on their calendars',
         },
       ],
       [

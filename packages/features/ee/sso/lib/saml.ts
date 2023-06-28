@@ -52,7 +52,7 @@ export const samlTenantProduct = async (prisma: PrismaClient, email: string) => 
     throw new TRPCError({
       code: "BAD_REQUEST",
       message:
-        "Could not find a SAML Identity Provider for your email. Please contact your admin to ensure you have been given access to Cal",
+        "Could not find a SAML Identity Provider for your email. Please contact your admin to ensure you have been given access to Timehuddle",
     });
   }
 

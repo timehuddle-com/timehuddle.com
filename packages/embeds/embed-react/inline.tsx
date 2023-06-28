@@ -49,7 +49,7 @@ function App() {
   return (
     <>
       <h1>
-        There is <code>Cal</code> component below me
+        There is <code>Timehuddle</code> component below me
       </h1>
       <Cal
         calOrigin="http://localhost:3000"

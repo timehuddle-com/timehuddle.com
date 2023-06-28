@@ -24,7 +24,13 @@ const PoweredByCal = ({ logoOnly }: { logoOnly?: boolean }) => {
             />
           </>
         ) : (
-          <span className="text-emphasis font-semibold opacity-50 hover:opacity-100">{APP_NAME}</span>
+          <>
+            <img
+              className="relative -mt-px inline h-[10px] w-auto dark:invert"
+              src="/api/logo"
+              alt="Logo"
+            />
+          </>
         )}
       </Link>
     </div>

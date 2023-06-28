@@ -67,7 +67,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   });
 
   const name = user.email || user.username || user.id.toString();
-  const keyUri = authenticator.keyuri(name, "Cal", secret);
+  const keyUri = authenticator.keyuri(name, "Timehuddle", secret);
   const dataUri = await qrcode.toDataURL(keyUri);
 
   return res.json({ secret, keyUri, dataUri });

@@ -34,7 +34,7 @@ export async function getBusyTimes(params: {
     selectedCalendars,
   } = params;
   logger.silly(
-    `Checking Busy time from Cal Bookings in range ${startTime} to ${endTime} for input ${JSON.stringify({
+    `Checking Busy time from Timehuddle Bookings in range ${startTime} to ${endTime} for input ${JSON.stringify({
       userId,
       eventTypeId,
       status: BookingStatus.ACCEPTED,
@@ -120,7 +120,7 @@ export async function getBusyTimes(params: {
         source: `eventType-${eventType?.id}-booking-${id}`,
       }))
     );
-  logger.silly(`Busy Time from Cal Bookings ${JSON.stringify(busyTimes)}`);
+  logger.silly(`Busy Time from Timehuddle Bookings ${JSON.stringify(busyTimes)}`);
   performance.mark("prismaBookingGetEnd");
   performance.measure(`prisma booking get took $1'`, "prismaBookingGetStart", "prismaBookingGetEnd");
   if (credentials?.length > 0) {

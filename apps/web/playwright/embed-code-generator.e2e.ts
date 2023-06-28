@@ -74,7 +74,7 @@ async function expectToBeNavigatingToEmbedCodeAndPreviewDialog(
 async function expectToContainValidCode(page: Page, { embedType }: { embedType: string }) {
   const embedCode = await page.locator("[data-testid=embed-code]").inputValue();
   expect(embedCode.includes("(function (C, A, L)")).toBe(true);
-  expect(embedCode.includes(`Cal ${embedType} embed code begins`)).toBe(true);
+  expect(embedCode.includes(`Timehuddle ${embedType} embed code begins`)).toBe(true);
   return {
     message: () => `passed`,
     pass: true,
