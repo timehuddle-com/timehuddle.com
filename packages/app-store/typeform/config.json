@@ -6,7 +6,7 @@
   "logo": "icon-dark.svg",
   "url": "https://timehuddle.com/",
   "variant": "other",
-  "categories": ["other"],
+  "categories": ["automation"],
   "publisher": "Timehuddle",
   "email": "support@timehuddle.com",
   "description": "Adds a link to copy Typeform Redirect URL",

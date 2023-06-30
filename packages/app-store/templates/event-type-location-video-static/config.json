@@ -6,7 +6,7 @@
   "logo": "icon.svg",
   "url": "https://example.com/link",
   "variant": "conferencing",
-  "categories": ["video"],
+  "categories": ["conferencing"],
   "publisher": "Timehuddle",
   "email": "support@timehuddle.com",
   "appData": {
