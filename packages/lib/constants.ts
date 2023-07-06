@@ -49,7 +49,7 @@ export const ANDROID_CHROME_ICON_192 = "/android-chrome-192x192.png";
 export const ANDROID_CHROME_ICON_256 = "/android-chrome-256x256.png";
 export const ROADMAP = "https://timehuddle.com/roadmap";
 export const DESKTOP_APP_LINK = "https://timehuddle.com/download";
-export const JOIN_SLACK = "https://timehuddle.com/slack";
+export const JOIN_SLACK = "https://timehuddle.slack.com";
 export const POWERED_BY_URL = `${WEBSITE_URL}/?utm_source=embed&utm_medium=powered-by-button`;
 export const DOCS_URL = "https://timehuddle.com/docs";
 export const DEVELOPER_DOCS = "https://timehuddle.com/docs";
