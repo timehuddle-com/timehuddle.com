@@ -720,7 +720,7 @@ export default function Success(props: SuccessProps) {
                       <span className="underline">
                         <a
                           target="_blank"
-                          href="https://cal.com/blog/google-s-new-spam-policy-may-be-affecting-your-invitations">
+                          href="https://support.google.com/mail/thread/11271065/how-can-i-stop-google-calendar-invites-going-into-spam?hl=en">
                           {t("resolve")}
                         </a>
                       </span>
