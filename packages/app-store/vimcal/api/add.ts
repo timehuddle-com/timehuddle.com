@@ -13,8 +13,8 @@ const handler: AppDeclarativeHandler = {
     newTab: true,
     url: "https://timehuddle.com",
   },
-  createCredential: ({ appType, user, slug }) =>
-    createDefaultInstallation({ appType, userId: user.id, slug, key: {} }),
+  createCredential: ({ appType, user, slug, teamId }) =>
+    createDefaultInstallation({ appType, userId: user.id, slug, key: {}, teamId }),
 };
 
 export default handler;

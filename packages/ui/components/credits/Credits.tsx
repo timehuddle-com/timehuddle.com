@@ -1,10 +1,14 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
-import { COMPANY_NAME, IS_SELF_HOSTED } from "@calcom/lib/constants";
+import { COMPANY_NAME, IS_SELF_HOSTED, IS_CALCOM } from "@calcom/lib/constants";
 
 // Relative to prevent triggering a recompile
 import pkg from "../../../../apps/web/package.json";
+
+// eslint-disable-next-line turbo/no-undeclared-env-vars
+const vercelCommitHash = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA;
+const commitHash = vercelCommitHash ? `-${vercelCommitHash.slice(0, 7)}` : "";
 
 export const CalComVersion = `v.${pkg.version}-${!IS_SELF_HOSTED ? "h" : "sh"}`;
 
@@ -23,9 +27,21 @@ export default function Credits() {
         {COMPANY_NAME}
       </Link>{" "}
       {hasMounted && (
-        <Link href="https://timehuddle.com" target="_blank" className="hover:underline">
-          {CalComVersion}
-        </Link>
+        <>
+          <Link href="https://timehuddle.com" target="_blank" className="hover:underline">
+            {CalComVersion}
+          </Link>
+          {vercelCommitHash && IS_CALCOM ? (
+            <Link
+              href={`https://github.com/calcom/cal.com/commit/${vercelCommitHash}`}
+              target="_blank"
+              className="hover:underline">
+              {commitHash}
+            </Link>
+          ) : (
+            commitHash
+          )}
+        </>
       )}
     </small>
   );
