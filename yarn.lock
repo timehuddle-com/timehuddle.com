@@ -4168,7 +4168,7 @@ __metadata:
     next-i18next: ^13.2.2
     react-hot-toast: ^2.3.0
     rrule: ^2.7.1
-    tailwind-merge: ^1.8.1
+    tailwind-merge: ^1.13.2
     tsdav: 2.0.3
     tslog: ^3.2.1
     typescript: ^4.9.4
@@ -4340,6 +4340,15 @@ __metadata:
 "@calcom/sirius_video@workspace:packages/app-store/sirius_video":
   version: 0.0.0-use.local
   resolution: "@calcom/sirius_video@workspace:packages/app-store/sirius_video"
+  dependencies:
+    "@calcom/lib": "*"
+    "@calcom/types": "*"
+  languageName: unknown
+  linkType: soft
+
+"@calcom/skiff@workspace:packages/app-store/skiff":
+  version: 0.0.0-use.local
+  resolution: "@calcom/skiff@workspace:packages/app-store/skiff"
   dependencies:
     "@calcom/lib": "*"
     "@calcom/types": "*"
@@ -4602,6 +4611,7 @@ __metadata:
     "@radix-ui/react-tooltip": ^1.0.0
     "@stripe/react-stripe-js": ^1.10.0
     "@stripe/stripe-js": ^1.35.0
+    "@tanem/react-nprogress": ^5.0.44
     "@tanstack/react-query": ^4.3.9
     "@testing-library/react": ^13.3.0
     "@tremor/react": ^2.0.0
@@ -10805,6 +10815,19 @@ __metadata:
   peerDependencies:
     tailwindcss: "*"
   checksum: 016f27266e07fd9966ab785c4182e5ad97c06a2198ff8df739cac90a544ee9c7ac2ac968a4fe9280a1378c3ac8943a315a9f09e70085f21f2839ebc080c88fd8
+  languageName: node
+  linkType: hard
+
+"@tanem/react-nprogress@npm:^5.0.44":
+  version: 5.0.44
+  resolution: "@tanem/react-nprogress@npm:5.0.44"
+  dependencies:
+    "@babel/runtime": ^7.22.5
+    hoist-non-react-statics: ^3.3.2
+  peerDependencies:
+    react: ^16.8.0 || ^17.0.0 || ^18.0.0
+    react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0
+  checksum: ada4f28cdad5aad378f5721561a6863f0b58fd0934a76fc9cd4b3c0a6961e359f267254362bbdbdaf89537358dba38465ef0b699154cf8d12c3a9e43a9980a4f
   languageName: node
   linkType: hard
 
@@ -31940,10 +31963,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tailwind-merge@npm:^1.8.1":
-  version: 1.8.1
-  resolution: "tailwind-merge@npm:1.8.1"
-  checksum: ec1320c07aab3803845b9e4df6e3e96c86ddeeb6ed00c13f6040e6612655c74c98f9275d7ae13c8110cc2c9f9a591d5e3d3225794aea465b6b8434c3bf654641
+"tailwind-merge@npm:^1.13.2":
+  version: 1.13.2
+  resolution: "tailwind-merge@npm:1.13.2"
+  checksum: 8f9de3bd1e6271f5980f863ab85e0103f062bf84d814d3188bf6870af7eb43725ea40493ef0693dedd652b668cbdfcd6544235b16b70d438ed20bca6118a9066
   languageName: node
   linkType: hard
 
