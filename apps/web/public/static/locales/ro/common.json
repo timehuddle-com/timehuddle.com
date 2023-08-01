@@ -1178,6 +1178,7 @@
   "event_time_variable": "Oră eveniment",
   "timezone_variable": "Timezone",
   "location_variable": "Loc",
+  "additional_notes_variable": "Note suplimentare",
   "organizer_name_variable": "Nume organizator",
   "app_upgrade_description": "Pentru a utiliza această caracteristică, trebuie să faceți upgrade la un cont Pro.",
   "invalid_number": "Număr de telefon nevalid",
@@ -1934,5 +1935,10 @@
   "404_the_team": "Echipa",
   "404_claim_entity_org": "Revendicați subdomeniul pentru organizația dvs.",
   "404_claim_entity_team": "Revendicați această echipă și începeți să gestionați programele în mod colectiv",
-  "insights_all_org_filter": "Toate aplicațiile"
+  "insights_all_org_filter": "Toate aplicațiile",
+  "insights_team_filter": "Echipă: {{teamName}}",
+  "insights_user_filter": "Utilizator: {{userName}}",
+  "insights_subtitle": "Vizualizați perspective cu privire la rezervări pentru toate evenimentele dvs.",
+  "custom_plan": "Plan personalizat",
+  "ADD_NEW_STRINGS_ABOVE_THIS_LINE_TO_PREVENT_MERGE_CONFLICTS": "↑↑↑↑↑↑↑↑↑↑↑↑↑ Adăugați stringurile noi deasupra acestui rând ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑"
 }

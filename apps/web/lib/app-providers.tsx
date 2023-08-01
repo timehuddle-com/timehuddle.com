@@ -1,5 +1,6 @@
 import { TooltipProvider } from "@radix-ui/react-tooltip";
 import { SessionProvider } from "next-auth/react";
+import { useSession } from "next-auth/react";
 import { EventCollectionProvider } from "next-collect/client";
 import type { SSRConfig } from "next-i18next";
 import { appWithTranslation } from "next-i18next";
@@ -10,7 +11,6 @@ import { useRouter } from "next/router";
 import type { ComponentProps, PropsWithChildren, ReactNode } from "react";
 
 import { OrgBrandingProvider } from "@calcom/features/ee/organizations/context/provider";
-import { useOrgBrandingValues } from "@calcom/features/ee/organizations/hooks";
 import DynamicHelpscoutProvider from "@calcom/features/ee/support/lib/helpscout/providerDynamic";
 import DynamicIntercomProvider from "@calcom/features/ee/support/lib/intercom/providerDynamic";
 import { FeatureProvider } from "@calcom/features/flags/context/provider";
@@ -54,7 +54,12 @@ const getEmbedNamespace = (query: ReturnType<typeof useRouter>["query"]) => {
   return typeof window !== "undefined" ? window.getEmbedNamespace() : (query.embed as string) || null;
 };
 
-const CustomI18nextProvider = (props: AppPropsWithChildren) => {
+// We dont need to pass nonce to the i18n provider - this was causing x2-x3 re-renders on a hard refresh
+type AppPropsWithoutNonce = Omit<AppPropsWithChildren, "pageProps"> & {
+  pageProps: Omit<AppPropsWithChildren["pageProps"], "nonce">;
+};
+
+const CustomI18nextProvider = (props: AppPropsWithoutNonce) => {
   /**
    * i18n should never be clubbed with other queries, so that it's caching can be managed independently.
    * We intend to not cache i18n query
@@ -213,20 +218,45 @@ function FeatureFlagsProvider({ children }: { children: React.ReactNode }) {
   return <FeatureProvider value={flags}>{children}</FeatureProvider>;
 }
 
+function useOrgBrandingValues() {
+  const session = useSession();
+
+  const res = trpc.viewer.organizations.getBrand.useQuery(undefined, {
+    // Only fetch if we have a session to avoid flooding logs with errors
+    enabled: session.status === "authenticated",
+  });
+
+  if (res.status === "loading") {
+    return undefined;
+  }
+
+  if (res.status === "error") return null;
+
+  return res.data;
+}
+
 function OrgBrandProvider({ children }: { children: React.ReactNode }) {
   const orgBrand = useOrgBrandingValues();
-  return <OrgBrandingProvider value={orgBrand}>{children}</OrgBrandingProvider>;
+  return <OrgBrandingProvider value={{ orgBrand }}>{children}</OrgBrandingProvider>;
 }
 
 const AppProviders = (props: AppPropsWithChildren) => {
   const session = trpc.viewer.public.session.useQuery().data;
   // No need to have intercom on public pages - Good for Page Performance
   const isPublicPage = usePublicPage();
+  const { pageProps, ...rest } = props;
+  const { _nonce, ...restPageProps } = pageProps;
+  const propsWithoutNonce = {
+    pageProps: {
+      ...restPageProps,
+    },
+    ...rest,
+  };
 
   const RemainingProviders = (
     <EventCollectionProvider options={{ apiPath: "/api/collect-events" }}>
       <SessionProvider session={session || undefined}>
-        <CustomI18nextProvider {...props}>
+        <CustomI18nextProvider {...propsWithoutNonce}>
           <TooltipProvider>
             {/* color-scheme makes background:transparent not work which is required by embed. We need to ensure next-theme adds color-scheme to `body` instead of `html`(https://github.com/pacocoursey/next-themes/blob/main/src/index.tsx#L74). Once that's done we can enable color-scheme support */}
             <CalcomThemeProvider

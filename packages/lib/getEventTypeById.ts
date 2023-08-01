@@ -91,6 +91,7 @@ export default async function getEventTypeById({
       periodEndDate: true,
       periodCountCalendarDays: true,
       requiresConfirmation: true,
+      requiresBookerEmailVerification: true,
       recurringEvent: true,
       hideCalendarNotes: true,
       disableGuests: true,
@@ -117,9 +118,6 @@ export default async function getEventTypeById({
           slug: true,
           parentId: true,
           members: {
-            where: {
-              accepted: true,
-            },
             select: {
               role: true,
               user: {
@@ -356,7 +354,11 @@ export default async function getEventTypeById({
           ...member.user,
           avatar: `${CAL_URL}/${member.user.username}/avatar.png`,
         };
-        return { ...user, eventTypes: user.eventTypes.map((evTy) => evTy.slug), membership: member.role };
+        return {
+          ...user,
+          eventTypes: user.eventTypes.map((evTy) => evTy.slug),
+          membership: member.role,
+        };
       })
     : [];
 

@@ -23,9 +23,9 @@ import {
   useIsEmbed,
 } from "@calcom/embed-core/embed-iframe";
 import { getServerSession } from "@calcom/features/auth/lib/getServerSession";
+import { SystemField } from "@calcom/features/bookings/lib/SystemField";
 import { getBookingWithResponses } from "@calcom/features/bookings/lib/get-booking";
 import {
-  SystemField,
   getBookingFieldsWithSystemFields,
   SMS_REMINDER_NUMBER_FIELD,
 } from "@calcom/features/bookings/lib/getBookingFields";
@@ -165,10 +165,14 @@ export default function Success(props: SuccessProps) {
     );
   }
 
+  let evtName = props.eventType.eventName;
+  if (eventType.isDynamic && bookingInfo.responses?.title) {
+    evtName = bookingInfo.responses.title as string;
+  }
   const eventNameObject = {
     attendeeName,
     eventType: props.eventType.title,
-    eventName: (props.dynamicEventName as string) || props.eventType.eventName,
+    eventName: evtName,
     host: props.profile.name || "Nameless",
     location: location,
     bookingFields: bookingInfo.responses,
@@ -405,7 +409,9 @@ export default function Success(props: SuccessProps) {
                       </>
                     )}
                     <div className="font-medium">{t("what")}</div>
-                    <div className="col-span-2 mb-6 last:mb-0">{eventName}</div>
+                    <div className="col-span-2 mb-6 last:mb-0" data-testid="booking-title">
+                      {eventName}
+                    </div>
                     <div className="font-medium">{t("when")}</div>
                     <div className="col-span-2 mb-6 last:mb-0">
                       {reschedule && !!formerTime && (
@@ -440,7 +446,9 @@ export default function Success(props: SuccessProps) {
                           {bookingInfo?.user && (
                             <div className="mb-3">
                               <div>
-                                <span className="mr-2">{bookingInfo.user.name}</span>
+                                <span data-testid="booking-host-name" className="mr-2">
+                                  {bookingInfo.user.name}
+                                </span>
                                 <Badge variant="blue">{t("Host")}</Badge>
                               </div>
                               <p className="text-default">{bookingInfo.user.email}</p>
