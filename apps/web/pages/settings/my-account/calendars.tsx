@@ -1,6 +1,6 @@
 import { Trans } from "next-i18next";
 import Link from "next/link";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 import { Fragment } from "react";
 
 import DisconnectIntegration from "@calcom/features/apps/components/DisconnectIntegration";
@@ -182,6 +182,7 @@ const CalendarsView = () => {
                             {item.calendars.map((cal) => (
                               <CalendarSwitch
                                 key={cal.externalId}
+                                credentialId={cal.credentialId}
                                 externalId={cal.externalId}
                                 title={cal.name || "Nameless calendar"}
                                 name={cal.name || "Nameless calendar"}

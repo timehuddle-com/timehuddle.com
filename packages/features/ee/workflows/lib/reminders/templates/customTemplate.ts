@@ -9,6 +9,8 @@ export type VariablesType = {
   eventName?: string;
   organizerName?: string;
   attendeeName?: string;
+  attendeeFirstName?: string;
+  attendeeLastName?: string;
   attendeeEmail?: string;
   eventDate?: Dayjs;
   eventEndTime?: Dayjs;
@@ -46,12 +48,27 @@ const customTemplate = (
 
   const currentTimeFormat = timeFormat || TimeFormat.TWELVE_HOUR;
 
+  const attendeeNameWords = variables.attendeeName?.trim().split(" ");
+  const attendeeNameWordCount = attendeeNameWords?.length ?? 0;
+
+  const attendeeFirstName = variables.attendeeFirstName
+    ? variables.attendeeFirstName
+    : attendeeNameWords?.[0] ?? "";
+
+  const attendeeLastName = variables.attendeeLastName
+    ? variables.attendeeLastName
+    : attendeeNameWordCount > 1
+    ? attendeeNameWords![attendeeNameWordCount - 1]
+    : "";
+
   let dynamicText = text
     .replaceAll("{EVENT_NAME}", variables.eventName || "")
     .replaceAll("{ORGANIZER}", variables.organizerName || "")
     .replaceAll("{ATTENDEE}", variables.attendeeName || "")
     .replaceAll("{ORGANIZER_NAME}", variables.organizerName || "") //old variable names
     .replaceAll("{ATTENDEE_NAME}", variables.attendeeName || "") //old variable names
+    .replaceAll("{ATTENDEE_FIRST_NAME}", attendeeFirstName)
+    .replaceAll("{ATTENDEE_LAST_NAME}", attendeeLastName)
     .replaceAll("{EVENT_DATE}", translatedDate)
     .replaceAll("{EVENT_TIME}", variables.eventDate?.format(currentTimeFormat) || "")
     .replaceAll("{START_TIME}", variables.eventDate?.format(currentTimeFormat) || "")

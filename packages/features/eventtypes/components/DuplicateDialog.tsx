@@ -1,4 +1,5 @@
-import { useRouter } from "next/router";
+import { useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -32,6 +33,7 @@ const querySchema = z.object({
 });
 
 const DuplicateDialog = () => {
+  const searchParams = useSearchParams();
   const { t } = useLocale();
   const router = useRouter();
   const [firstRender, setFirstRender] = useState(true);
@@ -49,19 +51,22 @@ const DuplicateDialog = () => {
   const { register } = form;
 
   useEffect(() => {
-    if (router.query.dialog === "duplicate") {
-      form.setValue("id", Number(router.query.id as string) || -1);
-      form.setValue("title", (router.query.title as string) || "");
-      form.setValue("slug", t("event_type_duplicate_copy_text", { slug: router.query.slug as string }));
-      form.setValue("description", (router.query.description as string) || "");
-      form.setValue("length", Number(router.query.length) || 30);
+    if (searchParams?.get("dialog") === "duplicate") {
+      form.setValue("id", Number(searchParams?.get("id") as string) || -1);
+      form.setValue("title", (searchParams?.get("title") as string) || "");
+      form.setValue(
+        "slug",
+        t("event_type_duplicate_copy_text", { slug: searchParams?.get("slug") as string })
+      );
+      form.setValue("description", (searchParams?.get("description") as string) || "");
+      form.setValue("length", Number(searchParams?.get("length")) || 30);
     }
-  }, [router.query.dialog]);
+  }, [searchParams?.get("dialog")]);
 
   const duplicateMutation = trpc.viewer.eventTypes.duplicate.useMutation({
     onSuccess: async ({ eventType }) => {
       await router.replace("/event-types/" + eventType.id);
-      showToast(t("event_type_created_successfully", { eventTypeTitle: eventType.title }), "success");
+      showToast(t("event_type_created_successfully"), "success");
     },
     onError: (err) => {
       if (err instanceof HttpError) {

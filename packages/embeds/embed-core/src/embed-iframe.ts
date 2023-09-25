@@ -1,29 +1,22 @@
-import { useRouter } from "next/router";
-import type { CSSProperties } from "react";
-import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
+import { useEffect, useRef, useState, useCallback } from "react";
 
 import type { Message } from "./embed";
 import { sdkActionManager } from "./sdk-event";
-
-type Theme = "dark" | "light";
-
-export type BookerLayouts = "month_view" | "week_view" | "column_view";
-
-export type EmbedThemeConfig = Theme | "auto";
-export type UiConfig = {
-  hideEventTypeDetails?: boolean;
-  // If theme not provided we would get null
-  theme?: EmbedThemeConfig | null;
-  styles?: EmbedStyles & EmbedNonStylesConfig;
-  //TODO: Extract from tailwind the list of all custom variables and support them in auto-completion as well as runtime validation. Followup with listing all variables in Embed Snippet Generator UI.
-  cssVarsPerTheme?: Record<Theme, Record<string, string>>;
-  layout?: BookerLayouts;
-  colorScheme?: string | null;
-};
+import type { EmbedThemeConfig, UiConfig, EmbedNonStylesConfig, BookerLayouts, EmbedStyles } from "./types";
 
 type SetStyles = React.Dispatch<React.SetStateAction<EmbedStyles>>;
 type setNonStylesConfig = React.Dispatch<React.SetStateAction<EmbedNonStylesConfig>>;
 
+declare global {
+  interface Window {
+    CalEmbed: {
+      __logQueue?: unknown[];
+      embedStore: typeof embedStore;
+      applyCssVars: (cssVarsPerTheme: UiConfig["cssVarsPerTheme"]) => void;
+    };
+  }
+}
 /**
  * This is in-memory persistence needed so that when user browses through the embed, the configurations from the instructions aren't lost.
  */
@@ -46,20 +39,6 @@ const embedStore = {
    */
   setUiConfig: [] as ((arg0: UiConfig) => void)[],
 };
-
-declare global {
-  interface Window {
-    CalEmbed: {
-      __logQueue?: unknown[];
-      embedStore: typeof embedStore;
-      applyCssVars: (cssVarsPerTheme: UiConfig["cssVarsPerTheme"]) => void;
-    };
-    CalComPageStatus: string;
-    isEmbed?: () => boolean;
-    getEmbedNamespace: () => string | null;
-    getEmbedTheme: () => EmbedThemeConfig | null;
-  }
-}
 
 let isSafariBrowser = false;
 const isBrowser = typeof window !== "undefined";
@@ -98,23 +77,6 @@ function log(...args: unknown[]) {
       console.log(...args);
     }
   }
-}
-
-// Only allow certain styles to be modified so that when we make any changes to HTML, we know what all embed styles might be impacted.
-// Keep this list to minimum, only adding those styles which are really needed.
-interface EmbedStyles {
-  body?: Pick<CSSProperties, "background">;
-  eventTypeListItem?: Pick<CSSProperties, "background" | "color" | "backgroundColor">;
-  enabledDateButton?: Pick<CSSProperties, "background" | "color" | "backgroundColor">;
-  disabledDateButton?: Pick<CSSProperties, "background" | "color" | "backgroundColor">;
-  availabilityDatePicker?: Pick<CSSProperties, "background" | "color" | "backgroundColor">;
-}
-interface EmbedNonStylesConfig {
-  /** Default would be center */
-  align?: "left";
-  branding?: {
-    brandColor?: string;
-  };
 }
 
 const setEmbedStyles = (stylesConfig: EmbedStyles) => {
@@ -177,14 +139,35 @@ function isValidNamespace(ns: string | null | undefined) {
   return typeof ns !== "undefined" && ns !== null;
 }
 
-export const useEmbedTheme = () => {
-  const router = useRouter();
-  const [theme, setTheme] = useState(embedStore.theme || (router.query.theme as typeof embedStore.theme));
+/**
+ * It handles any URL change done through Web history API as well
+ * History API is currently being used by Booker/utils/query-param
+ */
+const useUrlChange = (callback: (newUrl: string) => void) => {
+  const currentFullUrl = isBrowser ? new URL(document.URL) : null;
+  const pathname = currentFullUrl?.pathname ?? "";
+  const searchParams = currentFullUrl?.searchParams ?? null;
+  const lastKnownUrl = useRef(`${pathname}?${searchParams}`);
   useEffect(() => {
-    router.events.on("routeChangeComplete", () => {
-      sdkActionManager?.fire("__routeChanged", {});
-    });
-  }, [router.events]);
+    const newUrl = `${pathname}?${searchParams}`;
+    if (lastKnownUrl.current !== newUrl) {
+      lastKnownUrl.current = newUrl;
+      callback(newUrl);
+    }
+  }, [pathname, searchParams, callback]);
+};
+
+export const useEmbedTheme = () => {
+  const searchParams = useSearchParams();
+  const [theme, setTheme] = useState(
+    embedStore.theme || (searchParams?.get("theme") as typeof embedStore.theme)
+  );
+
+  const onUrlChange = useCallback(() => {
+    sdkActionManager?.fire("__routeChanged", {});
+  }, []);
+  useUrlChange(onUrlChange);
+
   embedStore.setTheme = setTheme;
   return theme;
 };
@@ -363,7 +346,6 @@ const methods = {
 };
 
 export type InterfaceWithParent = {
-  // Ensure that only one argument is read by the method
   [key in keyof typeof methods]: (firstAndOnlyArg: Parameters<(typeof methods)[key]>[number]) => void;
 };
 

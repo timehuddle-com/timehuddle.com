@@ -1,4 +1,5 @@
 import { Analytics } from "@vercel/analytics/react";
+import React from "react";
 
 import { trpc } from "@calcom/trpc/react";
 

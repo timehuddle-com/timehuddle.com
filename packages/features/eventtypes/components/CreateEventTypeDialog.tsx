@@ -1,6 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { isValidPhoneNumber } from "libphonenumber-js";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -117,7 +117,7 @@ export default function CreateEventTypeDialog({
   const createMutation = trpc.viewer.eventTypes.create.useMutation({
     onSuccess: async ({ eventType }) => {
       await router.replace("/event-types/" + eventType.id);
-      showToast(t("event_type_created_successfully", { eventTypeTitle: eventType.title }), "success");
+      showToast(t("event_type_created_successfully"), "success");
     },
     onError: (err) => {
       if (err instanceof HttpError) {

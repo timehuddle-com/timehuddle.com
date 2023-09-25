@@ -2,8 +2,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import type { Prisma } from "@prisma/client";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
-import { useRouter } from "next/router";
-import { useState, useLayoutEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useLayoutEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
 
@@ -12,29 +12,32 @@ import { getOrgFullDomain } from "@calcom/features/ee/organizations/lib/orgDomai
 import { IS_TEAM_BILLING_ENABLED, WEBAPP_URL } from "@calcom/lib/constants";
 import { getPlaceholderAvatar } from "@calcom/lib/defaultAvatarImage";
 import { useLocale } from "@calcom/lib/hooks/useLocale";
+import { useParamsWithFallback } from "@calcom/lib/hooks/useParamsWithFallback";
 import { md } from "@calcom/lib/markdownIt";
 import { markdownToSafeHTML } from "@calcom/lib/markdownToSafeHTML";
 import objectKeys from "@calcom/lib/objectKeys";
+import slugify from "@calcom/lib/slugify";
 import turndown from "@calcom/lib/turndownService";
 import { MembershipRole } from "@calcom/prisma/enums";
 import { trpc } from "@calcom/trpc/react";
-import { SkeletonContainer, SkeletonText } from "@calcom/ui";
 import {
   Avatar,
   Button,
   ConfirmationDialogContent,
   Dialog,
   DialogTrigger,
+  Editor,
   Form,
   ImageUploader,
   Label,
   LinkIconButton,
   Meta,
   showToast,
+  SkeletonContainer,
+  SkeletonText,
   TextField,
-  Editor,
 } from "@calcom/ui";
-import { ExternalLink, Link as LinkIcon, Trash2, LogOut } from "@calcom/ui/components/icon";
+import { ExternalLink, Link as LinkIcon, LogOut, Trash2 } from "@calcom/ui/components/icon";
 
 import { getLayout } from "../../../settings/layouts/SettingsLayout";
 
@@ -53,6 +56,8 @@ const teamProfileFormSchema = z.object({
 });
 
 const ProfileView = () => {
+  const params = useParamsWithFallback();
+  const teamId = Number(params.id);
   const { t } = useLocale();
   const router = useRouter();
   const utils = trpc.useContext();
@@ -79,9 +84,9 @@ const ProfileView = () => {
   });
 
   const { data: team, isLoading } = trpc.viewer.teams.get.useQuery(
-    { teamId: Number(router.query.id) },
+    { teamId, includeTeamLogo: true },
     {
-      enabled: !!router.query.id,
+      enabled: !!teamId,
       onError: () => {
         router.push("/settings");
       },
@@ -89,8 +94,8 @@ const ProfileView = () => {
         if (team) {
           form.setValue("name", team.name || "");
           form.setValue("slug", team.slug || "");
-          form.setValue("logo", team.logo || "");
           form.setValue("bio", team.bio || "");
+          form.setValue("logo", team.logo || "");
           if (team.slug === null && (team?.metadata as Prisma.JsonObject)?.requestedSlug) {
             form.setValue("slug", ((team?.metadata as Prisma.JsonObject)?.requestedSlug as string) || "");
           }
@@ -160,10 +165,10 @@ const ProfileView = () => {
               handleSubmit={(values) => {
                 if (team) {
                   const variables = {
-                    logo: values.logo,
                     name: values.name,
                     slug: values.slug,
                     bio: values.bio,
+                    logo: values.logo,
                   };
                   objectKeys(variables).forEach((key) => {
                     if (variables[key as keyof typeof variables] === team?.[key]) delete variables[key];
@@ -223,12 +228,12 @@ const ProfileView = () => {
                       value={value}
                       addOnLeading={
                         team.parent && orgBranding
-                          ? getOrgFullDomain(orgBranding?.slug, { protocol: false })
+                          ? getOrgFullDomain(orgBranding?.slug, { protocol: false }) + "/"
                           : `${WEBAPP_URL}/team/`
                       }
                       onChange={(e) => {
                         form.clearErrors("slug");
-                        form.setValue("slug", e?.target.value);
+                        form.setValue("slug", slugify(e?.target.value, true));
                       }}
                     />
                   </div>

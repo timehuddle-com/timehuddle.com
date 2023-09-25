@@ -1,19 +1,14 @@
 import type { GetServerSidePropsContext } from "next";
 import { signIn } from "next-auth/react";
-import { useRouter } from "next/router";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect } from "react";
 
 import { getPremiumMonthlyPlanPriceId } from "@calcom/app-store/stripepayment/lib/utils";
 import { getServerSession } from "@calcom/features/auth/lib/getServerSession";
 import { orgDomainConfig } from "@calcom/features/ee/organizations/lib/orgDomains";
 import stripe from "@calcom/features/ee/payments/server/stripe";
-import {
-  hostedCal,
-  isSAMLLoginEnabled,
-  samlProductID,
-  samlTenantID,
-  samlTenantProduct,
-} from "@calcom/features/ee/sso/lib/saml";
+import { hostedCal, isSAMLLoginEnabled, samlProductID, samlTenantID } from "@calcom/features/ee/sso/lib/saml";
+import { ssoTenantProduct } from "@calcom/features/ee/sso/lib/sso";
 import { checkUsername } from "@calcom/lib/server/checkUsername";
 import prisma from "@calcom/prisma";
 
@@ -27,11 +22,12 @@ import { ssrInit } from "@server/lib/ssr";
 export type SSOProviderPageProps = inferSSRProps<typeof getServerSideProps>;
 
 export default function Provider(props: SSOProviderPageProps) {
+  const searchParams = useSearchParams();
   const router = useRouter();
 
   useEffect(() => {
     if (props.provider === "saml") {
-      const email = typeof router.query?.email === "string" ? router.query?.email : null;
+      const email = searchParams?.get("email");
 
       if (!email) {
         router.push("/auth/error?error=" + "Email not provided");
@@ -110,7 +106,7 @@ export const getServerSideProps = async (context: GetServerSidePropsContext) => 
       error = "Email not provided";
     } else {
       try {
-        const ret = await samlTenantProduct(prisma, emailParam);
+        const ret = await ssoTenantProduct(prisma, emailParam);
         tenant = ret.tenant;
         product = ret.product;
       } catch (e) {

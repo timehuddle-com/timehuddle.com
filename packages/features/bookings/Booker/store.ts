@@ -6,7 +6,7 @@ import { BookerLayouts } from "@calcom/prisma/zod-utils";
 
 import type { GetBookingType } from "../lib/get-booking";
 import type { BookerState, BookerLayout } from "./types";
-import { updateQueryParam, getQueryParam } from "./utils/query-param";
+import { updateQueryParam, getQueryParam, removeQueryParam } from "./utils/query-param";
 
 /**
  * Arguments passed into store initializer, containing
@@ -25,6 +25,7 @@ type StoreInitializeType = {
   verifiedEmail?: string | null;
   rescheduleUid?: string | null;
   seatReferenceUid?: string;
+  durationConfig?: number[] | null;
   org?: string | null;
 };
 
@@ -32,6 +33,7 @@ type SeatedEventData = {
   seatsPerTimeSlot?: number | null;
   attendees?: number;
   bookingUid?: string;
+  showAvailableSeatsCount?: boolean | null;
 };
 
 export type BookerStore = {
@@ -76,6 +78,10 @@ export type BookerStore = {
    */
   selectedDatesAndTimes: { [key: string]: { [key: string]: string[] } } | null;
   setSelectedDatesAndTimes: (selectedDatesAndTimes: { [key: string]: { [key: string]: string[] } }) => void;
+  /**
+   * Multiple duration configuration
+   */
+  durationConfig: number[] | null;
   /**
    * Selected event duration in minutes.
    */
@@ -149,6 +155,12 @@ export const useBookerStore = create<BookerStore>((set, get) => ({
   },
   selectedDate: getQueryParam("date") || null,
   setSelectedDate: (selectedDate: string | null) => {
+    // unset selected date
+    if (!selectedDate) {
+      removeQueryParam("date");
+      return;
+    }
+
     const currentSelection = dayjs(get().selectedDate);
     const newSelection = dayjs(selectedDate);
     set({ selectedDate });
@@ -195,6 +207,7 @@ export const useBookerStore = create<BookerStore>((set, get) => ({
     seatsPerTimeSlot: undefined,
     attendees: undefined,
     bookingUid: undefined,
+    showAvailableSeatsCount: true,
   },
   setSeatedEventData: (seatedEventData: SeatedEventData) => {
     set({ seatedEventData });
@@ -210,6 +223,7 @@ export const useBookerStore = create<BookerStore>((set, get) => ({
     bookingData = null,
     layout,
     isTeamEvent,
+    durationConfig,
     org,
   }: StoreInitializeType) => {
     const selectedDateInStore = get().selectedDate;
@@ -235,11 +249,22 @@ export const useBookerStore = create<BookerStore>((set, get) => ({
       bookingData,
       layout: layout || BookerLayouts.MONTH_VIEW,
       isTeamEvent: isTeamEvent || false,
+      durationConfig,
       // Preselect today's date in week / column view, since they use this to show the week title.
       selectedDate:
         selectedDateInStore ||
         (["week_view", "column_view"].includes(layout) ? dayjs().format("YYYY-MM-DD") : null),
     });
+
+    if (eventId) {
+      if (durationConfig?.includes(Number(getQueryParam("duration")))) {
+        set({
+          selectedDuration: Number(getQueryParam("duration")),
+        });
+      } else {
+        removeQueryParam("duration");
+      }
+    }
 
     // Unset selected timeslot if user is rescheduling. This could happen
     // if the user reschedules a booking right after the confirmation page.
@@ -249,7 +274,8 @@ export const useBookerStore = create<BookerStore>((set, get) => ({
     if (month) set({ month });
     //removeQueryParam("layout");
   },
-  selectedDuration: Number(getQueryParam("duration")) || null,
+  durationConfig: null,
+  selectedDuration: null,
   setSelectedDuration: (selectedDuration: number | null) => {
     set({ selectedDuration });
     updateQueryParam("duration", selectedDuration ?? "");
@@ -282,6 +308,7 @@ export const useInitializeBookerStore = ({
   verifiedEmail = null,
   layout,
   isTeamEvent,
+  durationConfig,
   org,
 }: StoreInitializeType) => {
   const initializeStore = useBookerStore((state) => state.initialize);
@@ -297,6 +324,7 @@ export const useInitializeBookerStore = ({
       isTeamEvent,
       org,
       verifiedEmail,
+      durationConfig,
     });
   }, [
     initializeStore,
@@ -310,5 +338,6 @@ export const useInitializeBookerStore = ({
     layout,
     isTeamEvent,
     verifiedEmail,
+    durationConfig,
   ]);
 };

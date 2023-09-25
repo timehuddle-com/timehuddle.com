@@ -1,7 +1,9 @@
-import { ExternalLink, MoreHorizontal, Edit2, UserX, Lock } from "lucide-react";
+import { ExternalLink, MoreHorizontal, Edit2, UserX, Lock, SendIcon } from "lucide-react";
+import { useSession } from "next-auth/react";
 
 import { classNames } from "@calcom/lib";
 import { useLocale } from "@calcom/lib/hooks/useLocale";
+import { trpc } from "@calcom/trpc/react";
 import {
   ButtonGroup,
   Tooltip,
@@ -12,6 +14,7 @@ import {
   DropdownMenuItem,
   DropdownItem,
   DropdownMenuSeparator,
+  showToast,
 } from "@calcom/ui";
 
 import type { Action } from "./UserListTable";
@@ -30,11 +33,25 @@ export function TableActions({
     canEdit: boolean;
     canRemove: boolean;
     canImpersonate: boolean;
+    canResendInvitation: boolean;
   };
 }) {
-  const { t } = useLocale();
+  const { t, i18n } = useLocale();
+  const { data: session } = useSession();
+  const resendInvitationMutation = trpc.viewer.teams.resendInvitation.useMutation({
+    onSuccess: () => {
+      showToast(t("invitation_resent"), "success");
+    },
+    onError: (error) => {
+      showToast(error.message, "error");
+    },
+  });
 
   const usersProfileUrl = domain + "/" + user.username;
+
+  if (!session?.user.org?.id) return null;
+
+  const orgId = session?.user?.org?.id;
 
   return (
     <>
@@ -66,7 +83,7 @@ export function TableActions({
                     type="button"
                     onClick={() =>
                       dispatch({
-                        type: "SET_CHANGE_MEMBER_ROLE_ID",
+                        type: "EDIT_USER_SHEET",
                         payload: {
                           user,
                           showModal: true,
@@ -118,6 +135,23 @@ export function TableActions({
                   </DropdownItem>
                 </DropdownMenuItem>
               )}
+              {permissionsForUser.canResendInvitation && (
+                <DropdownMenuItem>
+                  <DropdownItem
+                    type="button"
+                    onClick={() => {
+                      resendInvitationMutation.mutate({
+                        teamId: orgId,
+                        language: i18n.language,
+                        email: user.email,
+                        isOrg: true,
+                      });
+                    }}
+                    StartIcon={SendIcon}>
+                    {t("resend_invitation")}
+                  </DropdownItem>
+                </DropdownMenuItem>
+              )}
             </DropdownMenuContent>
           </Dropdown>
         )}
@@ -140,7 +174,7 @@ export function TableActions({
                     type="button"
                     onClick={() =>
                       dispatch({
-                        type: "SET_IMPERSONATE_ID",
+                        type: "EDIT_USER_SHEET",
                         payload: {
                           user,
                           showModal: true,

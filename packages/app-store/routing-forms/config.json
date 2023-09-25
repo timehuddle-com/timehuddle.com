@@ -10,7 +10,7 @@
   "variant": "other",
   "categories": ["automation"],
   "publisher": "Timehuddle",
-  "simplePath": "/routing-forms",
+  "simplePath": "/apps/routing-forms",
   "email": "support@timehuddle.com",
   "licenseRequired": true,
   "teamsPlanRequired": {

@@ -1,4 +1,4 @@
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 import type { Dispatch, SetStateAction } from "react";
 import { useMemo, useState } from "react";
 import type { UseFormReturn } from "react-hook-form";
@@ -39,6 +39,7 @@ export default function WorkflowDetailsPage(props: Props) {
   const router = useRouter();
 
   const [isAddActionDialogOpen, setIsAddActionDialogOpen] = useState(false);
+
   const [reload, setReload] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
@@ -55,7 +56,9 @@ export default function WorkflowDetailsPage(props: Props) {
           ...options,
           ...group.eventTypes.map((eventType) => ({
             value: String(eventType.id),
-            label: `${eventType.title} ${eventType.children.length ? `(+${eventType.children.length})` : ``}`,
+            label: `${eventType.title} ${
+              eventType.children && eventType.children.length ? `(+${eventType.children.length})` : ``
+            }`,
           })),
         ];
       }, [] as Option[]) || [],
@@ -107,6 +110,7 @@ export default function WorkflowDetailsPage(props: Props) {
       sender: isSMSAction(action) ? sender || SENDER_ID : SENDER_ID,
       senderName: !isSMSAction(action) ? senderName || SENDER_NAME : SENDER_NAME,
       numberVerificationPending: false,
+      includeCalendarEvent: false,
     };
     steps?.push(step);
     form.setValue("steps", steps);
@@ -114,7 +118,7 @@ export default function WorkflowDetailsPage(props: Props) {
 
   return (
     <>
-      <div className="my-8 sm:my-0 md:flex">
+      <div className="z-1 my-8 sm:my-0 md:flex">
         <div className="pl-2 pr-3 md:sticky md:top-6 md:h-0 md:pl-0">
           <div className="mb-5">
             <TextField
@@ -163,7 +167,12 @@ export default function WorkflowDetailsPage(props: Props) {
         <div className="bg-muted border-subtle w-full rounded-md border p-3 py-5 md:ml-3 md:p-8">
           {form.getValues("trigger") && (
             <div>
-              <WorkflowStepContainer form={form} user={props.user} teamId={teamId} readOnly={props.readOnly} />
+              <WorkflowStepContainer
+                form={form}
+                user={props.user}
+                teamId={teamId}
+                readOnly={props.readOnly}
+              />
             </div>
           )}
           {form.getValues("steps") && (
@@ -211,7 +220,7 @@ export default function WorkflowDetailsPage(props: Props) {
         isOpenDialog={deleteDialogOpen}
         setIsOpenDialog={setDeleteDialogOpen}
         workflowId={workflowId}
-        additionalFunction={async () => await router.push("/workflows")}
+        additionalFunction={async () => router.push("/workflows")}
       />
     </>
   );

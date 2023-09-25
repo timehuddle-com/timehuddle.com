@@ -1,3 +1,4 @@
+import { getLayout } from "@calcom/features/MainLayout";
 import { getFeatureFlagMap } from "@calcom/features/flags/server/utils";
 import {
   AverageEventDurationChart,
@@ -9,7 +10,7 @@ import {
 } from "@calcom/features/insights/components";
 import { FiltersProvider } from "@calcom/features/insights/context/FiltersProvider";
 import { Filters } from "@calcom/features/insights/filters";
-import Shell from "@calcom/features/shell/Shell";
+import { ShellMain } from "@calcom/features/shell/Shell";
 import { UpgradeTip } from "@calcom/features/tips";
 import { WEBAPP_URL } from "@calcom/lib/constants";
 import { useLocale } from "@calcom/lib/hooks/useLocale";
@@ -18,19 +19,6 @@ import { Button, ButtonGroup } from "@calcom/ui";
 import { RefreshCcw, UserPlus, Users } from "@calcom/ui/components/icon";
 
 import PageWrapper from "@components/PageWrapper";
-
-const Heading = () => {
-  const { t } = useLocale();
-
-  return (
-    <div className="min-w-52 hidden md:block">
-      <h3 className="font-cal max-w-28 sm:max-w-72 md:max-w-80 text-emphasis truncate text-xl font-semibold tracking-wide xl:max-w-full">
-        {t("insights")}
-      </h3>
-      <p className="text-default mt-2 hidden text-sm md:block">{t("insights_subtitle")}</p>
-    </div>
-  );
-};
 
 export default function InsightsPage() {
   const { t } = useLocale();
@@ -56,7 +44,7 @@ export default function InsightsPage() {
 
   return (
     <div>
-      <Shell hideHeadingOnMobile>
+      <ShellMain heading="Insights" subtitle={t("insights_subtitle")}>
         <UpgradeTip
           title={t("make_informed_decisions")}
           description={t("make_informed_decisions_description")}
@@ -79,10 +67,6 @@ export default function InsightsPage() {
             <></>
           ) : (
             <FiltersProvider>
-              <div className="ml-auto mt-0">
-                <Heading />
-              </div>
-
               <Filters />
 
               <div className="mb-4 space-y-6">
@@ -112,12 +96,13 @@ export default function InsightsPage() {
             </FiltersProvider>
           )}
         </UpgradeTip>
-      </Shell>
+      </ShellMain>
     </div>
   );
 }
 
 InsightsPage.PageWrapper = PageWrapper;
+InsightsPage.getLayout = getLayout;
 
 // If feature flag is disabled, return not found on getServerSideProps
 export const getServerSideProps = async () => {

@@ -1,4 +1,4 @@
-import { useRouter } from "next/router";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 
 import { APP_NAME, WEBAPP_URL } from "@calcom/lib/constants";
@@ -12,6 +12,8 @@ import SkeletonLoaderTeamList from "./SkeletonloaderTeamList";
 import TeamList from "./TeamList";
 
 export function TeamsListing() {
+  const searchParams = useSearchParams();
+  const token = searchParams?.get("token");
   const { t } = useLocale();
   const trpcContext = trpc.useContext();
   const router = useRouter();
@@ -44,6 +46,8 @@ export function TeamsListing() {
   const teams = useMemo(() => data?.filter((m) => m.accepted) || [], [data]);
   const invites = useMemo(() => data?.filter((m) => !m.accepted) || [], [data]);
 
+  const isCreateTeamButtonDisabled = !!(user?.organizationId && !user?.organization?.isOrgAdmin);
+
   const features = [
     {
       icon: <Users className="h-5 w-5 text-red-500" />,
@@ -63,7 +67,7 @@ export function TeamsListing() {
     {
       icon: <Mail className="h-5 w-5 text-orange-500" />,
       title: t("sms_attendee_action"),
-      description: t("make_it_easy_to_book"),
+      description: t("send_reminder_sms"),
     },
     {
       icon: <Video className="h-5 w-5 text-purple-500" />,
@@ -79,9 +83,9 @@ export function TeamsListing() {
 
   useEffect(() => {
     if (!router) return;
-    if (router.query.token) inviteMemberByToken({ token: router.query.token as string });
+    if (token) inviteMemberByToken({ token });
     else setInviteTokenChecked(true);
-  }, [router, inviteMemberByToken, setInviteTokenChecked]);
+  }, [router, inviteMemberByToken, setInviteTokenChecked, token]);
 
   if (isLoading || !inviteTokenChecked) {
     return <SkeletonLoaderTeamList />;
@@ -93,7 +97,7 @@ export function TeamsListing() {
 
       {invites.length > 0 && (
         <div className="bg-subtle mb-6 rounded-md p-5">
-          <Label className=" text-emphasis pb-2 font-semibold">{t("pending_invites")}</Label>
+          <Label className="text-emphasis pb-2  font-semibold">{t("pending_invites")}</Label>
           <TeamList teams={invites} pending />
         </div>
       )}
@@ -129,7 +133,11 @@ export function TeamsListing() {
             buttonRaw={
               <Button
                 color="secondary"
-                href={`${WEBAPP_URL}/settings/teams/new?returnTo=${WEBAPP_URL}/teams`}>
+                disabled={!!isCreateTeamButtonDisabled}
+                tooltip={
+                  isCreateTeamButtonDisabled ? t("org_admins_can_create_new_teams") : t("create_new_team")
+                }
+                onClick={() => router.push(`${WEBAPP_URL}/settings/teams/new?returnTo=${WEBAPP_URL}/teams`)}>
                 {t(`create_new_team`)}
               </Button>
             }

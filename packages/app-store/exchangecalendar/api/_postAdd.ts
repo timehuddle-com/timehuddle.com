@@ -30,12 +30,13 @@ export async function getHandler(req: NextApiRequest, res: NextApiResponse) {
     type: "exchange_calendar",
     key: encrypted,
     userId: session.user?.id,
+    teamId: null,
     appId: "exchange",
     invalid: false,
   };
 
   try {
-    const service = new CalendarService({ id: 0, ...data });
+    const service = new CalendarService({ id: 0, user: { email: session.user.email || "" }, ...data });
     await service?.listCalendars();
     await prisma.credential.create({ data });
   } catch (reason) {

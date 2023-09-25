@@ -104,6 +104,7 @@ export const EditLocationDialog = (props: ISetLocationDialog) => {
     phone: z.string().optional().nullable(),
     locationAddress: z.string().optional(),
     credentialId: z.number().optional(),
+    teamName: z.string().optional(),
     locationLink: z
       .string()
       .optional()
@@ -298,8 +299,19 @@ export const EditLocationDialog = (props: ISetLocationDialog) => {
                 }
 
                 if (values.credentialId) {
-                  details = { ...details, credentialId: values.credentialId };
+                  details = {
+                    ...details,
+                    credentialId: values.credentialId,
+                  };
                 }
+
+                if (values.teamName) {
+                  details = {
+                    ...details,
+                    teamName: values.teamName,
+                  };
+                }
+
                 saveLocation(newLocation, details);
                 setShowLocationModal(false);
                 setSelectedLocation?.(undefined);
@@ -344,6 +356,11 @@ export const EditLocationDialog = (props: ISetLocationDialog) => {
                             onChange={(val) => {
                               if (val) {
                                 locationFormMethods.setValue("locationType", val.value);
+                                if (val.credential) {
+                                  locationFormMethods.setValue("credentialId", val.credential.id);
+                                  locationFormMethods.setValue("teamName", val.credential.team?.name);
+                                }
+
                                 locationFormMethods.unregister([
                                   "locationLink",
                                   "locationAddress",
@@ -365,24 +382,22 @@ export const EditLocationDialog = (props: ISetLocationDialog) => {
                 }}
               />
               {selectedLocation && LocationOptions}
-              <DialogFooter>
-                <div className="mt-4 flex justify-end space-x-2 rtl:space-x-reverse">
-                  <Button
-                    onClick={() => {
-                      setShowLocationModal(false);
-                      setSelectedLocation?.(undefined);
-                      setEditingLocationType?.("");
-                      locationFormMethods.unregister(["locationType", "locationLink"]);
-                    }}
-                    type="button"
-                    color="secondary">
-                    {t("cancel")}
-                  </Button>
+              <DialogFooter className="mt-4">
+                <Button
+                  onClick={() => {
+                    setShowLocationModal(false);
+                    setSelectedLocation?.(undefined);
+                    setEditingLocationType?.("");
+                    locationFormMethods.unregister(["locationType", "locationLink"]);
+                  }}
+                  type="button"
+                  color="secondary">
+                  {t("cancel")}
+                </Button>
 
-                  <Button data-testid="update-location" type="submit">
-                    {t("update")}
-                  </Button>
-                </div>
+                <Button data-testid="update-location" type="submit">
+                  {t("update")}
+                </Button>
               </DialogFooter>
             </Form>
           </div>

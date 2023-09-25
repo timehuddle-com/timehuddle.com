@@ -25,6 +25,13 @@ export const getWorkflowActionOptionsHandler = async ({ ctx }: GetWorkflowAction
     const { hasTeamPlan } = await hasTeamPlanHandler({ ctx });
     isTeamsPlan = !!hasTeamPlan;
   }
+
+  const hasOrgsPlan = !!user.organizationId;
+
   const t = await getTranslation(ctx.user.locale, "common");
-  return getWorkflowActionOptions(t, IS_SELF_HOSTED || isCurrentUsernamePremium || isTeamsPlan);
+  return getWorkflowActionOptions(
+    t,
+    IS_SELF_HOSTED || isCurrentUsernamePremium || isTeamsPlan,
+    IS_SELF_HOSTED || hasOrgsPlan
+  );
 };

@@ -36,7 +36,8 @@ export const scheduleWhatsappReminder = async (
   template: WorkflowTemplates,
   userId?: number | null,
   teamId?: number | null,
-  isVerificationPending = false
+  isVerificationPending = false,
+  seatReferenceUid?: string
 ) => {
   const { startTime, endTime } = evt;
   const uid = evt.uid as string;
@@ -140,12 +141,7 @@ export const scheduleWhatsappReminder = async (
 
   // Allows debugging generated whatsapp content without waiting for twilio to send whatsapp messages
   log.debug(`Sending Whatsapp for trigger ${triggerEvent}`, message);
-  if (
-    message.length > 0 &&
-    reminderPhone &&
-    isNumberVerified &&
-    action !== WorkflowActions.WHATSAPP_ATTENDEE
-  ) {
+  if (message.length > 0 && reminderPhone && isNumberVerified) {
     //send WHATSAPP when event is booked/cancelled/rescheduled
     if (
       triggerEvent === WorkflowTriggerEvents.NEW_EVENT ||
@@ -184,6 +180,7 @@ export const scheduleWhatsappReminder = async (
               scheduledDate: scheduledDate.toDate(),
               scheduled: true,
               referenceId: scheduledWHATSAPP.sid,
+              seatReferenceId: seatReferenceUid,
             },
           });
         } catch (error) {
@@ -198,6 +195,7 @@ export const scheduleWhatsappReminder = async (
             method: WorkflowMethods.WHATSAPP,
             scheduledDate: scheduledDate.toDate(),
             scheduled: false,
+            seatReferenceId: seatReferenceUid,
           },
         });
       }

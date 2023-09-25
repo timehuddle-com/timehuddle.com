@@ -5,7 +5,7 @@
   "type": "signal_video",
   "logo": "icon.svg",
   "url": "https://timehuddle.com/",
-  "variant": "conferencing",
+  "variant": "messaging",
   "categories": ["messaging"],
   "publisher": "Timehuddle",
   "email": "support@timehuddle.com",
