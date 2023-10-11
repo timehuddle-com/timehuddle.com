@@ -1,5 +1,6 @@
 import { expect } from "@playwright/test";
 
+// eslint-disable-next-line no-restricted-imports
 import { test } from "@calcom/web/playwright/lib/fixtures";
 
 import { bookFirstEvent, deleteAllBookingsByEmail, getEmbedIframe, todo } from "../lib/testUtils";
@@ -7,8 +8,7 @@ import { bookFirstEvent, deleteAllBookingsByEmail, getEmbedIframe, todo } from "
 test.describe("Inline Iframe", () => {
   test("Inline Iframe - Configured with Dark Theme", async ({
     page,
-    getActionFiredDetails,
-    addEmbedListeners,
+    embeds: { addEmbedListeners, getActionFiredDetails },
   }) => {
     await deleteAllBookingsByEmail("embed-user@example.com");
     await addEmbedListeners("");
