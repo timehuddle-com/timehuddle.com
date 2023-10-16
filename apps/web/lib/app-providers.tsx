@@ -8,6 +8,7 @@ import { ThemeProvider } from "next-themes";
 import type { AppProps as NextAppProps, AppProps as NextJsAppProps } from "next/app";
 import type { ParsedUrlQuery } from "querystring";
 import type { PropsWithChildren, ReactNode } from "react";
+import { useEffect } from "react";
 
 import { OrgBrandingProvider } from "@calcom/features/ee/organizations/context/provider";
 import DynamicHelpscoutProvider from "@calcom/features/ee/support/lib/helpscout/providerDynamic";
@@ -71,13 +72,34 @@ const CustomI18nextProvider = (props: AppPropsWithoutNonce) => {
   /**
    * i18n should never be clubbed with other queries, so that it's caching can be managed independently.
    **/
-  const clientViewerI18n = useViewerI18n(props.pageProps.newLocale);
+
+  const session = useSession();
+  const locale = session?.data?.user.locale ?? props.pageProps.newLocale;
+
+  useEffect(() => {
+    window.document.documentElement.lang = locale;
+
+    let direction = window.document.dir || "ltr";
+
+    try {
+      const intlLocale = new Intl.Locale(locale);
+      // @ts-expect-error INFO: Typescript does not know about the Intl.Locale textInfo attribute
+      direction = intlLocale.textInfo?.direction;
+    } catch (error) {
+      console.error(error);
+    }
+
+    window.document.dir = direction;
+  }, [locale]);
+
+  const clientViewerI18n = useViewerI18n(locale);
   const i18n = clientViewerI18n.data?.i18n;
 
   const passedProps = {
     ...props,
     pageProps: {
       ...props.pageProps,
+
       ...i18n,
     },
   };
@@ -247,8 +269,8 @@ const AppProviders = (props: AppPropsWithChildren) => {
 
   const RemainingProviders = (
     <EventCollectionProvider options={{ apiPath: "/api/collect-events" }}>
-      <CustomI18nextProvider {...propsWithoutNonce}>
-        <SessionProvider session={pageProps.session ?? undefined}>
+      <SessionProvider session={pageProps.session ?? undefined}>
+        <CustomI18nextProvider {...propsWithoutNonce}>
           <TooltipProvider>
             {/* color-scheme makes background:transparent not work which is required by embed. We need to ensure next-theme adds color-scheme to `body` instead of `html`(https://github.com/pacocoursey/next-themes/blob/main/src/index.tsx#L74). Once that's done we can enable color-scheme support */}
             <CalcomThemeProvider
@@ -264,8 +286,8 @@ const AppProviders = (props: AppPropsWithChildren) => {
               </FeatureFlagsProvider>
             </CalcomThemeProvider>
           </TooltipProvider>
-        </SessionProvider>
-      </CustomI18nextProvider>
+        </CustomI18nextProvider>
+      </SessionProvider>
     </EventCollectionProvider>
   );
 
