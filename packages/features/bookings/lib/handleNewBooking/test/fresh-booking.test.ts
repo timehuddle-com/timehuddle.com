@@ -37,6 +37,7 @@ import {
   mockVideoAppToCrashOnCreateMeeting,
   BookingLocations,
 } from "@calcom/web/test/utils/bookingScenario/bookingScenario";
+import { createMockNextJsRequest } from "@calcom/web/test/utils/bookingScenario/createMockNextJsRequest";
 import {
   expectWorkflowToBeTriggered,
   expectSuccessfulBookingCreationEmails,
@@ -49,28 +50,28 @@ import {
   expectBrokenIntegrationEmails,
   expectSuccessfulCalendarEventCreationInCalendar,
 } from "@calcom/web/test/utils/bookingScenario/expects";
-
-import { createMockNextJsRequest } from "./lib/createMockNextJsRequest";
-import { getMockRequestDataForBooking } from "./lib/getMockRequestDataForBooking";
-import { setupAndTeardown } from "./lib/setupAndTeardown";
+import { getMockRequestDataForBooking } from "@calcom/web/test/utils/bookingScenario/getMockRequestDataForBooking";
+import { setupAndTeardown } from "@calcom/web/test/utils/bookingScenario/setupAndTeardown";
+import { testWithAndWithoutOrg } from "@calcom/web/test/utils/bookingScenario/test";
 
 export type CustomNextApiRequest = NextApiRequest & Request;
 
 export type CustomNextApiResponse = NextApiResponse & Response;
 // Local test runs sometime gets too slow
 const timeout = process.env.CI ? 5000 : 20000;
+
 describe("handleNewBooking", () => {
   setupAndTeardown();
 
   describe("Fresh/New Booking:", () => {
-    test(
+    testWithAndWithoutOrg(
       `should create a successful booking with Cal Video(Daily Video) if no explicit location is provided
           1. Should create a booking in the database
           2. Should send emails to the booker as well as organizer
           3. Should create a booking in the event's destination calendar
           3. Should trigger BOOKING_CREATED webhook
     `,
-      async ({ emails }) => {
+      async ({ emails, org }) => {
         const handleNewBooking = (await import("@calcom/features/bookings/lib/handleNewBooking")).default;
         const booker = getBooker({
           email: "booker@example.com",
@@ -89,37 +90,41 @@ describe("handleNewBooking", () => {
             externalId: "organizer@google-calendar.com",
           },
         });
+
         await createBookingScenario(
-          getScenarioData({
-            webhooks: [
-              {
-                userId: organizer.id,
-                eventTriggers: ["BOOKING_CREATED"],
-                subscriberUrl: "http://my-webhook.example.com",
-                active: true,
-                eventTypeId: 1,
-                appId: null,
-              },
-            ],
-            eventTypes: [
-              {
-                id: 1,
-                slotInterval: 45,
-                length: 45,
-                users: [
-                  {
-                    id: 101,
-                  },
-                ],
-                destinationCalendar: {
-                  integration: "google_calendar",
-                  externalId: "event-type-1@google-calendar.com",
+          getScenarioData(
+            {
+              webhooks: [
+                {
+                  userId: organizer.id,
+                  eventTriggers: ["BOOKING_CREATED"],
+                  subscriberUrl: "http://my-webhook.example.com",
+                  active: true,
+                  eventTypeId: 1,
+                  appId: null,
                 },
-              },
-            ],
-            organizer,
-            apps: [TestData.apps["google-calendar"], TestData.apps["daily-video"]],
-          })
+              ],
+              eventTypes: [
+                {
+                  id: 1,
+                  slotInterval: 45,
+                  length: 45,
+                  users: [
+                    {
+                      id: 101,
+                    },
+                  ],
+                  destinationCalendar: {
+                    integration: "google_calendar",
+                    externalId: "event-type-1@google-calendar.com",
+                  },
+                },
+              ],
+              organizer,
+              apps: [TestData.apps["google-calendar"], TestData.apps["daily-video"]],
+            },
+            org?.organization
+          )
         );
 
         mockSuccessfulVideoMeetingCreation({
@@ -195,6 +200,10 @@ describe("handleNewBooking", () => {
         });
 
         expectSuccessfulBookingCreationEmails({
+          booking: {
+            uid: createdBooking.uid!,
+            urlOrigin: org ? org.urlOrigin : WEBAPP_URL,
+          },
           booker,
           organizer,
           emails,
@@ -206,7 +215,7 @@ describe("handleNewBooking", () => {
           organizer,
           location: BookingLocations.CalVideo,
           subscriberUrl: "http://my-webhook.example.com",
-          videoCallUrl: `${WEBAPP_URL}/video/DYNAMIC_UID`,
+          videoCallUrl: `${WEBAPP_URL}/video/${createdBooking.uid}`,
         });
       },
       timeout
@@ -343,6 +352,9 @@ describe("handleNewBooking", () => {
           });
 
           expectSuccessfulBookingCreationEmails({
+            booking: {
+              uid: createdBooking.uid!,
+            },
             booker,
             organizer,
             emails,
@@ -353,7 +365,7 @@ describe("handleNewBooking", () => {
             organizer,
             location: BookingLocations.CalVideo,
             subscriberUrl: "http://my-webhook.example.com",
-            videoCallUrl: `${WEBAPP_URL}/video/DYNAMIC_UID`,
+            videoCallUrl: `${WEBAPP_URL}/video/${createdBooking.uid}`,
           });
         },
         timeout
@@ -488,6 +500,9 @@ describe("handleNewBooking", () => {
           });
 
           expectSuccessfulBookingCreationEmails({
+            booking: {
+              uid: createdBooking.uid!,
+            },
             booker,
             organizer,
             emails,
@@ -499,7 +514,7 @@ describe("handleNewBooking", () => {
             organizer,
             location: BookingLocations.CalVideo,
             subscriberUrl: "http://my-webhook.example.com",
-            videoCallUrl: `${WEBAPP_URL}/video/DYNAMIC_UID`,
+            videoCallUrl: `${WEBAPP_URL}/video/${createdBooking.uid}`,
           });
         },
         timeout
@@ -749,6 +764,9 @@ describe("handleNewBooking", () => {
           });
 
           expectSuccessfulBookingCreationEmails({
+            booking: {
+              uid: createdBooking.uid!,
+            },
             booker,
             organizer,
             emails,
@@ -760,7 +778,7 @@ describe("handleNewBooking", () => {
             organizer,
             location: BookingLocations.CalVideo,
             subscriberUrl: "http://my-webhook.example.com",
-            videoCallUrl: `${WEBAPP_URL}/video/DYNAMIC_UID`,
+            videoCallUrl: `${WEBAPP_URL}/video/${createdBooking.uid}`,
           });
         },
         timeout
@@ -834,11 +852,14 @@ describe("handleNewBooking", () => {
           const createdBooking = await handleNewBooking(req);
 
           expectSuccessfulBookingCreationEmails({
+            booking: {
+              uid: createdBooking.uid!,
+            },
             booker,
             organizer,
             emails,
             // Because no calendar was involved, we don't have an ics UID
-            iCalUID: createdBooking.uid,
+            iCalUID: createdBooking.uid!,
           });
 
           expectBookingCreatedWebhookToHaveBeenFired({
@@ -918,7 +939,7 @@ describe("handleNewBooking", () => {
           });
           await handleNewBooking(req);
 
-          expectBrokenIntegrationEmails({ booker, organizer, emails });
+          expectBrokenIntegrationEmails({ organizer, emails });
 
           expectBookingCreatedWebhookToHaveBeenFired({
             booker,
@@ -1436,6 +1457,9 @@ describe("handleNewBooking", () => {
           expectWorkflowToBeTriggered();
 
           expectSuccessfulBookingCreationEmails({
+            booking: {
+              uid: createdBooking.uid!,
+            },
             booker,
             organizer,
             emails,
@@ -1447,7 +1471,7 @@ describe("handleNewBooking", () => {
             organizer,
             location: BookingLocations.CalVideo,
             subscriberUrl,
-            videoCallUrl: `${WEBAPP_URL}/video/DYNAMIC_UID`,
+            videoCallUrl: `${WEBAPP_URL}/video/${createdBooking.uid}`,
           });
         },
         timeout
@@ -1730,6 +1754,9 @@ describe("handleNewBooking", () => {
         expectWorkflowToBeTriggered();
 
         expectSuccessfulBookingCreationEmails({
+          booking: {
+            uid: createdBooking.uid!,
+          },
           booker,
           organizer,
           emails,
@@ -1883,7 +1910,7 @@ describe("handleNewBooking", () => {
             organizer,
             location: BookingLocations.CalVideo,
             subscriberUrl: "http://my-webhook.example.com",
-            videoCallUrl: `${WEBAPP_URL}/video/DYNAMIC_UID`,
+            videoCallUrl: `${WEBAPP_URL}/video/${createdBooking.uid}`,
             paidEvent: true,
           });
         },

@@ -51,10 +51,8 @@ import getWebhooks from "@calcom/features/webhooks/lib/getWebhooks";
 import { cancelScheduledJobs, scheduleTrigger } from "@calcom/features/webhooks/lib/scheduleTrigger";
 import { isPrismaObjOrUndefined, parseRecurringEvent } from "@calcom/lib";
 import { getVideoCallUrlFromCalEvent } from "@calcom/lib/CalEventParser";
-import { checkRateLimitAndThrowError } from "@calcom/lib/checkRateLimitAndThrowError";
 import { getDefaultEvent, getUsernameList } from "@calcom/lib/defaultEvents";
 import { getErrorFromUnknown } from "@calcom/lib/errors";
-import getIP from "@calcom/lib/getIP";
 import getPaymentAppData from "@calcom/lib/getPaymentAppData";
 import { getTeamIdFromEventType } from "@calcom/lib/getTeamIdFromEventType";
 import { HttpError } from "@calcom/lib/http-error";
@@ -96,7 +94,7 @@ import type { EventTypeInfo } from "../../webhooks/lib/sendPayload";
 import getBookingResponsesSchema from "./getBookingResponsesSchema";
 
 const translator = short();
-const log = logger.getChildLogger({ prefix: ["[api] book:user"] });
+const log = logger.getSubLogger({ prefix: ["[api] book:user"] });
 
 type User = Prisma.UserGetPayload<typeof userSelect>;
 type BufferedBusyTimes = BufferedBusyTime[];
@@ -276,6 +274,7 @@ const getEventTypesFromDB = async (eventTypeId: number) => {
       periodEndDate: true,
       periodDays: true,
       periodCountCalendarDays: true,
+      lockTimeZoneToggleOnBookingPage: true,
       requiresConfirmation: true,
       requiresBookerEmailVerification: true,
       userId: true,
@@ -363,11 +362,7 @@ async function ensureAvailableUsers(
   eventType: Awaited<ReturnType<typeof getEventTypesFromDB>> & {
     users: IsFixedAwareUser[];
   },
-  input: { dateFrom: string; dateTo: string; timeZone: string; originalRescheduledBooking?: BookingType },
-  recurringDatesInfo?: {
-    allRecurringDates: string[] | undefined;
-    currentRecurringIndex: number | undefined;
-  }
+  input: { dateFrom: string; dateTo: string; timeZone: string; originalRescheduledBooking?: BookingType }
 ) {
   const availableUsers: IsFixedAwareUser[] = [];
   const duration = dayjs(input.dateTo).diff(input.dateFrom, "minute");
@@ -407,22 +402,7 @@ async function ensureAvailableUsers(
 
     let foundConflict = false;
     try {
-      if (
-        eventType.recurringEvent &&
-        recurringDatesInfo?.currentRecurringIndex === 0 &&
-        recurringDatesInfo.allRecurringDates
-      ) {
-        const allBookingDates = recurringDatesInfo.allRecurringDates.map((strDate) => new Date(strDate));
-        // Go through each date for the recurring event and check if each one's availability
-        // DONE: Decreased computational complexity from O(2^n) to O(n) by refactoring this loop to stop
-        // running at the first unavailable time.
-        let i = 0;
-        while (!foundConflict && i < allBookingDates.length) {
-          foundConflict = checkForConflicts(bufferedBusyTimes, allBookingDates[i++], duration);
-        }
-      } else {
-        foundConflict = checkForConflicts(bufferedBusyTimes, input.dateFrom, duration);
-      }
+      foundConflict = checkForConflicts(bufferedBusyTimes, input.dateFrom, duration);
     } catch {
       log.debug({
         message: "Unable set isAvailableToBeBooked. Using true. ",
@@ -637,19 +617,16 @@ async function handler(
   req: NextApiRequest & { userId?: number | undefined },
   {
     isNotAnApiCall = false,
+    skipAvailabilityCheck = false,
   }: {
     isNotAnApiCall?: boolean;
+    skipAvailabilityCheck?: boolean;
   } = {
     isNotAnApiCall: false,
+    skipAvailabilityCheck: false,
   }
 ) {
   const { userId } = req;
-  const userIp = getIP(req);
-
-  await checkRateLimitAndThrowError({
-    rateLimitingType: "core",
-    identifier: userIp,
-  });
 
   // handle dynamic user
   let eventType =
@@ -685,12 +662,12 @@ async function handler(
     eventType,
   });
 
-  const loggerWithEventDetails = logger.getChildLogger({
+  const loggerWithEventDetails = logger.getSubLogger({
     prefix: ["book:user", `${eventTypeId}:${reqBody.user}/${eventTypeSlug}`],
   });
 
   if (isEventTypeLoggingEnabled({ eventTypeId, usernameOrTeamName: reqBody.user })) {
-    logger.setSettings({ minLevel: "silly" });
+    logger.settings.minLevel = 0;
   }
 
   const fullName = getFullName(bookerName);
@@ -719,6 +696,7 @@ async function handler(
       isTeamEventType,
       eventType: getPiiFreeEventType(eventType),
       dynamicUserList,
+      skipAvailabilityCheck,
       paymentAppData: {
         enabled: paymentAppData.enabled,
         price: paymentAppData.price,
@@ -881,7 +859,12 @@ async function handler(
   ) {
     const startAsDate = dayjs(reqBody.start).toDate();
     if (eventType.bookingLimits) {
-      await checkBookingLimits(eventType.bookingLimits as IntervalLimit, startAsDate, eventType.id);
+      await checkBookingLimits(
+        eventType.bookingLimits as IntervalLimit,
+        startAsDate,
+        eventType.id,
+        eventType.schedule?.timeZone
+      );
     }
     if (eventType.durationLimits) {
       await checkDurationLimits(eventType.durationLimits as IntervalLimit, startAsDate, eventType.id);
@@ -916,7 +899,7 @@ async function handler(
     }
   }
 
-  if (!eventType.seatsPerTimeSlot) {
+  if (!eventType.seatsPerTimeSlot && !skipAvailabilityCheck) {
     const availableUsers = await ensureAvailableUsers(
       {
         ...eventType,
@@ -929,14 +912,10 @@ async function handler(
         }),
       },
       {
-        dateFrom: reqBody.start,
-        dateTo: reqBody.end,
+        dateFrom: dayjs(reqBody.start).tz(reqBody.timeZone).format(),
+        dateTo: dayjs(reqBody.end).tz(reqBody.timeZone).format(),
         timeZone: reqBody.timeZone,
         originalRescheduledBooking,
-      },
-      {
-        allRecurringDates,
-        currentRecurringIndex,
       }
     );
 
@@ -997,7 +976,6 @@ async function handler(
   const attendeeTimezone = attendeeInfoOnReschedule ? attendeeInfoOnReschedule.timeZone : reqBody.timeZone;
 
   const tAttendees = await getTranslation(attendeeLanguage ?? "en", "common");
-
   // use host default
   if (isTeamEventType && locationBodyString === OrganizerDefaultConferencingAppType) {
     const metadataParseResult = userMetadataSchema.safeParse(organizerUser.metadata);
@@ -1431,7 +1409,7 @@ async function handler(
                 metadata.hangoutLink = updatedEvent.hangoutLink;
                 metadata.conferenceData = updatedEvent.conferenceData;
                 metadata.entryPoints = updatedEvent.entryPoints;
-                handleAppsStatus(results, newBooking);
+                evt.appsStatus = handleAppsStatus(results, newBooking);
               }
             }
           }
@@ -1851,6 +1829,7 @@ async function handler(
       ...eventTypeInfo,
       uid: resultBooking?.uid || uid,
       bookingId: booking?.id,
+      rescheduleId: originalRescheduledBooking?.id || undefined,
       rescheduleUid,
       rescheduleStartTime: originalRescheduledBooking?.startTime
         ? dayjs(originalRescheduledBooking?.startTime).utc().format()
@@ -2105,7 +2084,7 @@ async function handler(
     booking: (Booking & { appsStatus?: AppsStatus[] }) | null
   ) {
     // Taking care of apps status
-    const resultStatus: AppsStatus[] = results.map((app) => ({
+    let resultStatus: AppsStatus[] = results.map((app) => ({
       appName: app.appName,
       type: app.type,
       success: app.success ? 1 : 0,
@@ -2118,8 +2097,7 @@ async function handler(
       if (booking !== null) {
         booking.appsStatus = resultStatus;
       }
-      evt.appsStatus = resultStatus;
-      return;
+      return resultStatus;
     }
     // From down here we can assume reqAppsStatus is not undefined anymore
     // Other status exist, so this is the last booking of a series,
@@ -2134,7 +2112,8 @@ async function handler(
       }
       return prev;
     }, {} as { [key: string]: AppsStatus });
-    evt.appsStatus = Object.values(calcAppsStatus);
+    resultStatus = Object.values(calcAppsStatus);
+    return resultStatus;
   }
 
   let videoCallUrl;
@@ -2174,44 +2153,42 @@ async function handler(
 
     results = updateManager.results;
     referencesToCreate = updateManager.referencesToCreate;
-    if (results.length > 0 && results.some((res) => !res.success)) {
+    const isThereAnIntegrationError = results && results.some((res) => !res.success);
+    if (isThereAnIntegrationError) {
       const error = {
         errorCode: "BookingReschedulingMeetingFailed",
         message: "Booking Rescheduling failed",
       };
 
-      loggerWithEventDetails.error(`Booking ${organizerUser.name} failed`, safeStringify({ error, results }));
+      loggerWithEventDetails.error(
+        `EventManager.create failure in some of the integrations ${organizerUser.username}`,
+        safeStringify({ error, results })
+      );
     } else {
-      const metadata: AdditionalInformation = {};
       const calendarResult = results.find((result) => result.type.includes("_calendar"));
 
       evt.iCalUID = Array.isArray(calendarResult?.updatedEvent)
         ? calendarResult?.updatedEvent[0]?.iCalUID
         : calendarResult?.updatedEvent?.iCalUID || undefined;
+    }
 
-      if (results.length) {
-        // TODO: Handle created event metadata more elegantly
-        const [updatedEvent] = Array.isArray(results[0].updatedEvent)
-          ? results[0].updatedEvent
-          : [results[0].updatedEvent];
-        if (updatedEvent) {
-          metadata.hangoutLink = updatedEvent.hangoutLink;
-          metadata.conferenceData = updatedEvent.conferenceData;
-          metadata.entryPoints = updatedEvent.entryPoints;
-          handleAppsStatus(results, booking);
-          videoCallUrl = metadata.hangoutLink || videoCallUrl || updatedEvent?.url;
-        }
-      }
-      if (noEmail !== true && isConfirmedByDefault) {
-        const copyEvent = cloneDeep(evt);
-        loggerWithEventDetails.debug("Emails: Sending rescheduled emails for booking confirmation");
-        await sendRescheduledEmails({
-          ...copyEvent,
-          additionalInformation: metadata,
-          additionalNotes, // Resets back to the additionalNote input and not the override value
-          cancellationReason: `$RCH$${rescheduleReason ? rescheduleReason : ""}`, // Removable code prefix to differentiate cancellation from rescheduling for email
-        });
-      }
+    const { metadata, videoCallUrl: _videoCallUrl } = getVideoCallDetails({
+      results,
+    });
+
+    videoCallUrl = _videoCallUrl;
+    evt.appsStatus = handleAppsStatus(results, booking);
+
+    // If there is an integration error, we don't send successful rescheduling email, instead broken integration email should be sent that are handled by either CalendarManager or videoClient
+    if (noEmail !== true && isConfirmedByDefault && !isThereAnIntegrationError) {
+      const copyEvent = cloneDeep(evt);
+      loggerWithEventDetails.debug("Emails: Sending rescheduled emails for booking confirmation");
+      await sendRescheduledEmails({
+        ...copyEvent,
+        additionalInformation: metadata,
+        additionalNotes, // Resets back to the additionalNote input and not the override value
+        cancellationReason: `$RCH$${rescheduleReason ? rescheduleReason : ""}`, // Removable code prefix to differentiate cancellation from rescheduling for email
+      });
     }
     // If it's not a reschedule, doesn't require confirmation and there's no price,
     // Create a booking
@@ -2234,7 +2211,7 @@ async function handler(
       };
 
       loggerWithEventDetails.error(
-        `Failure in creating events in some of the integrations ${organizerUser.username} failed`,
+        `EventManager.create failure in some of the integrations ${organizerUser.username}`,
         safeStringify({ error, results })
       );
     } else {
@@ -2296,7 +2273,7 @@ async function handler(
         metadata.hangoutLink = results[0].createdEvent?.hangoutLink;
         metadata.conferenceData = results[0].createdEvent?.conferenceData;
         metadata.entryPoints = results[0].createdEvent?.entryPoints;
-        handleAppsStatus(results, booking);
+        evt.appsStatus = handleAppsStatus(results, booking);
         videoCallUrl =
           metadata.hangoutLink || organizerOrFirstDynamicGroupMemberDefaultLocationUrl || videoCallUrl;
       }
@@ -2374,10 +2351,12 @@ async function handler(
         videoCallUrl: getVideoCallUrlFromCalEvent(evt),
       }
     : undefined;
+
   const webhookData = {
     ...evt,
     ...eventTypeInfo,
     bookingId: booking?.id,
+    rescheduleId: originalRescheduledBooking?.id || undefined,
     rescheduleUid,
     rescheduleStartTime: originalRescheduledBooking?.startTime
       ? dayjs(originalRescheduledBooking?.startTime).utc().format()
@@ -2537,7 +2516,7 @@ async function handler(
         ...evt,
         ...{ metadata: metadataFromEvent, eventType: { slug: eventType.slug } },
       },
-      isNotConfirmed: evt.requiresConfirmation || false,
+      isNotConfirmed: !isConfirmedByDefault,
       isRescheduleEvent: !!rescheduleUid,
       isFirstRecurringEvent: true,
       hideBranding: !!eventType.owner?.hideBranding,
@@ -2557,6 +2536,31 @@ async function handler(
 }
 
 export default handler;
+
+function getVideoCallDetails({
+  results,
+}: {
+  results: EventResult<AdditionalInformation & { url?: string | undefined; iCalUID?: string | undefined }>[];
+}) {
+  const firstVideoResult = results.find((result) => result.type.includes("_video"));
+  const metadata: AdditionalInformation = {};
+  let updatedVideoEvent = null;
+
+  if (firstVideoResult && firstVideoResult.success) {
+    updatedVideoEvent = Array.isArray(firstVideoResult.updatedEvent)
+      ? firstVideoResult.updatedEvent[0]
+      : firstVideoResult.updatedEvent;
+
+    if (updatedVideoEvent) {
+      metadata.hangoutLink = updatedVideoEvent.hangoutLink;
+      metadata.conferenceData = updatedVideoEvent.conferenceData;
+      metadata.entryPoints = updatedVideoEvent.entryPoints;
+    }
+  }
+  const videoCallUrl = metadata.hangoutLink || updatedVideoEvent?.url;
+
+  return { videoCallUrl, metadata, updatedVideoEvent };
+}
 
 function getRequiresConfirmationFlags({
   eventType,
@@ -2660,6 +2664,7 @@ const findBookingQuery = async (bookingId: number) => {
           description: true,
           currency: true,
           length: true,
+          lockTimeZoneToggleOnBookingPage: true,
           requiresConfirmation: true,
           requiresBookerEmailVerification: true,
           price: true,

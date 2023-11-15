@@ -21,7 +21,10 @@ import {
   BookingLocations,
   getMockBookingReference,
   getMockBookingAttendee,
+  getMockFailingAppStatus,
+  getMockPassingAppStatus,
 } from "@calcom/web/test/utils/bookingScenario/bookingScenario";
+import { createMockNextJsRequest } from "@calcom/web/test/utils/bookingScenario/createMockNextJsRequest";
 import {
   expectWorkflowToBeTriggered,
   expectBookingToBeInDatabase,
@@ -35,10 +38,8 @@ import {
   expectSuccessfulCalendarEventDeletionInCalendar,
   expectSuccessfulVideoMeetingDeletionInCalendar,
 } from "@calcom/web/test/utils/bookingScenario/expects";
-
-import { createMockNextJsRequest } from "./lib/createMockNextJsRequest";
-import { getMockRequestDataForBooking } from "./lib/getMockRequestDataForBooking";
-import { setupAndTeardown } from "./lib/setupAndTeardown";
+import { getMockRequestDataForBooking } from "@calcom/web/test/utils/bookingScenario/getMockRequestDataForBooking";
+import { setupAndTeardown } from "@calcom/web/test/utils/bookingScenario/setupAndTeardown";
 
 // Local test runs sometime gets too slow
 const timeout = process.env.CI ? 5000 : 20000;
@@ -103,6 +104,9 @@ describe("handleNewBooking", () => {
                 status: BookingStatus.ACCEPTED,
                 startTime: `${plus1DateString}T05:00:00.000Z`,
                 endTime: `${plus1DateString}T05:15:00.000Z`,
+                metadata: {
+                  videoCallUrl: "https://existing-daily-video-call-url.example.com",
+                },
                 references: [
                   {
                     type: appStoreMetadata.dailyvideo.type,
@@ -254,6 +258,10 @@ describe("handleNewBooking", () => {
           organizer,
           emails,
           iCalUID: "MOCKED_GOOGLE_CALENDAR_ICS_ID",
+          appsStatus: [
+            getMockPassingAppStatus({ slug: appStoreMetadata.dailyvideo.slug }),
+            getMockPassingAppStatus({ slug: appStoreMetadata.googlecalendar.slug }),
+          ],
         });
 
         expectBookingRescheduledWebhookToHaveBeenFired({
@@ -261,7 +269,7 @@ describe("handleNewBooking", () => {
           organizer,
           location: BookingLocations.CalVideo,
           subscriberUrl: "http://my-webhook.example.com",
-          videoCallUrl: `${WEBAPP_URL}/video/DYNAMIC_UID`,
+          videoCallUrl: `${WEBAPP_URL}/video/${createdBooking.uid}`,
         });
       },
       timeout
@@ -464,7 +472,7 @@ describe("handleNewBooking", () => {
           organizer,
           location: BookingLocations.CalVideo,
           subscriberUrl: "http://my-webhook.example.com",
-          videoCallUrl: `${WEBAPP_URL}/video/DYNAMIC_UID`,
+          videoCallUrl: `${WEBAPP_URL}/video/${createdBooking.uid}`,
         });
       },
       timeout
@@ -525,6 +533,9 @@ describe("handleNewBooking", () => {
                 status: BookingStatus.ACCEPTED,
                 startTime: `${plus1DateString}T05:00:00.000Z`,
                 endTime: `${plus1DateString}T05:15:00.000Z`,
+                metadata: {
+                  videoCallUrl: "https://existing-daily-video-call-url.example.com",
+                },
                 references: [
                   {
                     type: appStoreMetadata.dailyvideo.type,
@@ -551,6 +562,9 @@ describe("handleNewBooking", () => {
         );
 
         const _calendarMock = mockCalendarToCrashOnUpdateEvent("googlecalendar");
+        const _videoMock = mockSuccessfulVideoMeetingCreation({
+          metadataLookupKey: "dailyvideo",
+        });
 
         const mockBookingData = getMockRequestDataForBooking({
           data: {
@@ -559,7 +573,7 @@ describe("handleNewBooking", () => {
             responses: {
               email: booker.email,
               name: booker.name,
-              location: { optionValue: "", value: "New York" },
+              location: { optionValue: "", value: BookingLocations.CalVideo },
             },
           },
         });
@@ -577,16 +591,27 @@ describe("handleNewBooking", () => {
           },
           to: {
             description: "",
-            location: "New York",
+            location: "integrations:daily",
             // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             uid: createdBooking.uid!,
             eventTypeId: mockBookingData.eventTypeId,
             status: BookingStatus.ACCEPTED,
+            metadata: {
+              videoCallUrl: `${WEBAPP_URL}/video/${createdBooking?.uid}`,
+            },
             responses: expect.objectContaining({
               email: booker.email,
               name: booker.name,
             }),
+            // Booking References still use the original booking's references - Not sure how intentional it is.
             references: [
+              {
+                type: appStoreMetadata.dailyvideo.type,
+                uid: "MOCK_ID",
+                meetingId: "MOCK_ID",
+                meetingPassword: "MOCK_PASS",
+                meetingUrl: "http://mock-dailyvideo.example.com",
+              },
               {
                 type: appStoreMetadata.googlecalendar.type,
                 // A reference is still created in case of event creation failure, with nullish values. Not sure what's the purpose for this.
@@ -607,8 +632,18 @@ describe("handleNewBooking", () => {
         expectBookingRescheduledWebhookToHaveBeenFired({
           booker,
           organizer,
-          location: "New York",
+          location: "integrations:daily",
           subscriberUrl: "http://my-webhook.example.com",
+          payload: {
+            uid: createdBooking.uid,
+            appsStatus: [
+              expect.objectContaining(getMockPassingAppStatus({ slug: appStoreMetadata.dailyvideo.slug })),
+              expect.objectContaining(
+                getMockFailingAppStatus({ slug: appStoreMetadata.googlecalendar.slug })
+              ),
+            ],
+          },
+          videoCallUrl: `${WEBAPP_URL}/video/${createdBooking?.uid}`,
         });
       },
       timeout
@@ -1048,7 +1083,7 @@ describe("handleNewBooking", () => {
             organizer,
             location: BookingLocations.CalVideo,
             subscriberUrl: "http://my-webhook.example.com",
-            videoCallUrl: `${WEBAPP_URL}/video/DYNAMIC_UID`,
+            videoCallUrl: `${WEBAPP_URL}/video/${createdBooking.uid}`,
           });
         },
         timeout
@@ -1497,12 +1532,13 @@ describe("handleNewBooking", () => {
             emails,
             iCalUID: "MOCKED_GOOGLE_CALENDAR_ICS_ID",
           });
+
           expectBookingRescheduledWebhookToHaveBeenFired({
             booker,
             organizer,
             location: BookingLocations.CalVideo,
             subscriberUrl: "http://my-webhook.example.com",
-            videoCallUrl: `${WEBAPP_URL}/video/DYNAMIC_UID`,
+            videoCallUrl: `${WEBAPP_URL}/video/${createdBooking.uid}`,
           });
         },
         timeout
